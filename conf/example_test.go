@@ -21,7 +21,7 @@ import (
 	"fmt"
 )
 
-type Conf struct {
+type MyConf struct {
 	Mysql *MysqlConf
 	Redis *RedisConf
 }
@@ -39,7 +39,7 @@ type RedisConf struct {
 }
 
 func Example() {
-	conf := &Conf{}
-	Load(conf, "c")
-	fmt.Println(conf)
+	myConf := &MyConf{}
+	Load(myConf, "c")
+	fmt.Println(myConf)
 }

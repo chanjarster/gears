@@ -6,3 +6,15 @@
 
 
 
+## Install
+
+```bash
+go get github.com/chanjarster/gears
+```
+
+## Documents
+
+* [conf](conf/README.md)
+* [ratelimiter](ratelimiter/README.md)
+* [circuitbreaker](circuitbreaker/README.md)
+
