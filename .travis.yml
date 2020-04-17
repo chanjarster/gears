@@ -1,0 +1,58 @@
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+language: go
+
+dist: bionic
+
+os:
+- linux
+- osx
+
+go:
+- tip
+- 1.14.x
+- 1.13.x
+- 1.12.x
+- 1.11.x
+- 1.10.x
+
+before_install:
+- go get -t -v ./...
+
+jobs:
+  allow_failures:
+  - go: tip
+  
+  fast_finish: true
+  
+  include:
+  - name: standard-platform
+    stage: test
+    script:
+    #  build test for supported platforms
+    - GOOS=linux go build
+    - GOOS=darwin go build
+    - GOOS=freebsd go build
+    - GOOS=windows go build
+    - GOARCH=386 go build
+    - go get golang.org/x/tools/cmd/cover
+    - go get github.com/mattn/goveralls
+    # run tests on a standard platform
+    - go test -v -covermode=count -coverprofile=coverage.out ./...
+    # collect coverage
+#    - $HOME/gopath/bin/goveralls -coverprofile=coverage.out -service=travis-pro -repotoken $COVERALLS_TOKEN
+    # run tests with the race detector as well
+    - go test -race -v ./...
