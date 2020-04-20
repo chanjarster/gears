@@ -18,31 +18,38 @@
 package ratelimiter
 
 import (
+	"github.com/chanjarster/gears"
 	"reflect"
 	"testing"
 	"time"
 )
+
+func now(n int64) gears.NowFunc {
+	return func() int64 {
+		return n
+	}
+}
 
 func TestNewSyncFixedWindow(t *testing.T) {
 	cap := 500
 	windowSize := 500 * time.Millisecond
 
 	got := NewSyncFixedWindow(cap, windowSize)
-	want := &SyncFixedWindow{
-		count:      0,
-		windowSize: int64(windowSize),
-		capacity:   cap,
-		until:      0,
-	}
 
-	if !reflect.DeepEqual(got, want) {
-		t.Errorf("NewSyncFixedWindow() = %v, want %v", got, want)
+	if got, want := got.count, 0; got != want {
+		t.Errorf("NewSyncFixedWindow().count = %v, want %v", got, want)
 	}
-	if got.Capacity() != cap {
-		t.Errorf("NewSyncFixedWindow().Capacity() = %v, want %v", got.Capacity(), cap)
+	if got, want := got.WindowSize(), windowSize; got != want {
+		t.Errorf("NewSyncFixedWindow().WindowSize() = %v, want %v", got, want)
 	}
-	if got.WindowSize() != windowSize {
-		t.Errorf("NewSyncFixedWindow().WindowSize() = %v, want %v", got.WindowSize(), windowSize)
+	if got, want := got.Capacity(), cap; got != want {
+		t.Errorf("NewSyncFixedWindow().Capacity() = %v, want %v", got, want)
+	}
+	if got, want := got.until, int64(0); got != want {
+		t.Errorf("NewSyncFixedWindow().until = %v, want %v", got, want)
+	}
+	if got := got.nowFn; got == nil {
+		t.Errorf("NewSyncFixedWindow().nowFn is nil, want not nil")
 	}
 }
 
@@ -81,7 +88,8 @@ func TestSyncFixedWindow_Acquire(t *testing.T) {
 				t.Errorf("acquire() = %v, want %v", got, true)
 			}
 		}
-		time.Sleep(time.Millisecond * 60)
+		ratelimiter.nowFn = now(time.Now().Add(time.Millisecond * 60).UnixNano())
+
 		if got := ratelimiter.Acquire(); !got {
 			t.Errorf("acquire() = %v, want %v", got, true)
 		}

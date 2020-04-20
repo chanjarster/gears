@@ -29,21 +29,20 @@ func TestNewSyncSlidingWindow(t *testing.T) {
 	windowSize := 500 * time.Millisecond
 
 	got := NewSyncSlidingWindow(cap, windowSize)
-	want := &SyncSlidingWindow{
-		windowSize: int64(windowSize),
-		capacity:   cap,
-		records:    list.New(),
+
+	if got, want := got.WindowSize(), windowSize; got != want {
+		t.Errorf("NewSyncSlidingWindow().WindowSize() = %v, want %v", got, want)
+	}
+	if got, want := got.Capacity(), cap; got != want {
+		t.Errorf("NewSyncSlidingWindow().Capacity() = %v, want %v", got, want)
+	}
+	if got, want := got.records, list.New(); !reflect.DeepEqual(got, want) {
+		t.Errorf("NewSyncSlidingWindow().records = %v, want %v", got, want)
+	}
+	if got := got.nowFn; got == nil {
+		t.Errorf("NewSyncSlidingWindow().nowFn is nil, want not nil")
 	}
 
-	if !reflect.DeepEqual(got, want) {
-		t.Errorf("NewSyncSlidingWindow() = %v, want %v", got, want)
-	}
-	if got.Capacity() != cap {
-		t.Errorf("NewSyncSlidingWindow().Capacity() = %v, want %v", got.Capacity(), cap)
-	}
-	if got.WindowSize() != windowSize {
-		t.Errorf("NewSyncSlidingWindow().WindowSize() = %v, want %v", got.WindowSize(), windowSize)
-	}
 }
 
 func TestSyncSlidingWindow_Acquire(t *testing.T) {
@@ -83,7 +82,7 @@ func TestSyncSlidingWindow_Acquire(t *testing.T) {
 				t.Errorf("acquire() = %v, want %v", got, true)
 			}
 		}
-		time.Sleep(time.Millisecond * 60)
+		ratelimiter.nowFn = now(time.Now().Add(60 * time.Millisecond).UnixNano())
 		if got := ratelimiter.Acquire(); !got {
 			t.Errorf("acquire() = %v, want %v", got, true)
 		}

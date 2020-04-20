@@ -24,8 +24,8 @@ import (
 )
 
 func TestNewSyncTokenBucket(t *testing.T) {
-	var cap int = 10
-	var irs int = 20
+	var cap = 10
+	var irs = 20
 
 	bucket := NewSyncTokenBucket(cap, irs).(*SyncTokenBucket)
 
@@ -52,8 +52,8 @@ func TestSyncTokenBucket_Acquire(t *testing.T) {
 }
 
 func TestNewAtomicTokenBucket(t *testing.T) {
-	var cap int = 10
-	var irs int = 20 // issue rate
+	var cap = 10
+	var irs = 20 // issue rate
 
 	bucket := NewAtomicTokenBucket(cap, irs).(*AtomicTokenBucket)
 
@@ -110,7 +110,13 @@ func testTokenBucket_Acquire(t *testing.T, new func() (TokenBucket, int)) {
 				t.Errorf("acquire() = %v, want %v", got, true)
 			}
 		}
-		time.Sleep(time.Millisecond * 1100)
+		if stb, ok := bucket.(*SyncTokenBucket); ok {
+			stb.nowFn = now(time.Now().Add(time.Millisecond * 1100).UnixNano())
+		} else if atb, ok := bucket.(*AtomicTokenBucket); ok {
+			atb.nowFn = now(time.Now().Add(time.Millisecond * 1100).UnixNano())
+		} else {
+			t.Errorf("Unsupported TokenBucket")
+		}
 		if got := bucket.Acquire(); !got {
 			t.Errorf("acquire() = %v, want %v", got, true)
 		}

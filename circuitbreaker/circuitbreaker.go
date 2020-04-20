@@ -18,6 +18,7 @@
 package circuitbreaker
 
 import (
+	"github.com/chanjarster/gears"
 	"sync"
 	"time"
 )
@@ -54,27 +55,23 @@ const (
 	halfOpen state = iota // 半开
 )
 
-func sysNow() int64 {
-	return time.Now().UnixNano()
-}
-
 //  failureThreshold: 出现几次错误就进入断开状态
 //  resetTimeout: 断开状态持续多长时间，进入半开状态
 func NewSyncCircuitBreaker(failureThreshold int, resetTimeout time.Duration) *SyncCircuitBreaker {
 	return &SyncCircuitBreaker{
 		failureThreshold: failureThreshold,
 		resetTimeout:     int64(resetTimeout),
-		nowFn:            sysNow,
+		nowFn:            gears.SysNow,
 	}
 }
 
 type SyncCircuitBreaker struct {
 	lock             sync.RWMutex
-	failureThreshold int          // 多少次失败之后就断开
-	lastFailureTs    int64        // 上次失败的时间戳
-	failures         int          // 失败次数
-	resetTimeout     int64        // 当断开之后多久，把断路器重置到half-open状态
-	nowFn            func() int64 // 获得当前时间的函数
+	failureThreshold int           // 多少次失败之后就断开
+	lastFailureTs    int64         // 上次失败的时间戳
+	failures         int           // 失败次数
+	resetTimeout     int64         // 当断开之后多久，把断路器重置到half-open状态
+	nowFn            gears.NowFunc // 获得当前时间的函数
 }
 
 func (s *SyncCircuitBreaker) Do(task task, onError onError, onOpen onOpen) {

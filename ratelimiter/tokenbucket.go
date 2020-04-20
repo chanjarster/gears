@@ -18,6 +18,7 @@
 package ratelimiter
 
 import (
+	"github.com/chanjarster/gears"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -34,6 +35,7 @@ type SyncTokenBucket struct {
 	tokens             int   // 令牌数量
 	issueRatePerSecond int   // 每秒签发token数量
 	lastIssueTimestamp int64 // 上一次签发的时间戳
+	nowFn              gears.NowFunc
 }
 
 func NewSyncTokenBucket(capacity, issueRatePerSecond int) TokenBucket {
@@ -41,7 +43,8 @@ func NewSyncTokenBucket(capacity, issueRatePerSecond int) TokenBucket {
 		capacity:           capacity,
 		tokens:             capacity,
 		issueRatePerSecond: issueRatePerSecond,
-		lastIssueTimestamp: time.Now().UnixNano(),
+		lastIssueTimestamp: gears.SysNow(),
+		nowFn:              gears.SysNow,
 	}
 }
 
@@ -67,7 +70,7 @@ func (t *SyncTokenBucket) issueIfNecessary() {
 	if t.tokens >= t.capacity {
 		return
 	}
-	now := time.Now().UnixNano()
+	now := t.nowFn()
 
 	elapse := now - t.lastIssueTimestamp
 	delta := elapse / int64(time.Second) * int64(t.issueRatePerSecond)
@@ -89,6 +92,7 @@ type AtomicTokenBucket struct {
 	tokens             int64 // 令牌数量
 	issueRatePerSecond int   // 每秒签发token数量
 	lastIssueTimestamp int64 // 上一次签发的时间戳
+	nowFn              gears.NowFunc
 }
 
 func NewAtomicTokenBucket(capacity, issueRatePerSecond int) TokenBucket {
@@ -96,7 +100,8 @@ func NewAtomicTokenBucket(capacity, issueRatePerSecond int) TokenBucket {
 		capacity:           capacity,
 		tokens:             int64(capacity),
 		issueRatePerSecond: issueRatePerSecond,
-		lastIssueTimestamp: time.Now().UnixNano(),
+		lastIssueTimestamp: gears.SysNow(),
+		nowFn:              gears.SysNow,
 	}
 }
 
@@ -131,7 +136,7 @@ func (t *AtomicTokenBucket) issueIfNecessary() {
 		}
 
 		oldLit := atomic.LoadInt64(&t.lastIssueTimestamp)
-		now := time.Now().UnixNano()
+		now := t.nowFn()
 
 		elapse := now - oldLit
 		delta := elapse / int64(time.Second) * int64(t.issueRatePerSecond)
