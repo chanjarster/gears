@@ -37,7 +37,7 @@ import (
 // 如果要完美的控制流量，请使用SlidingWindow。
 // 不过固定时间窗口也具有它的优势：节省内存，它只需要计数就行了，而不需要记录每次请求的时间戳。
 type FixedWindow interface {
-	RateLimiter
+	Interface
 	WindowSize() time.Duration
 }
 

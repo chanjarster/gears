@@ -30,7 +30,7 @@ func BenchmarkSyncCircuitBreaker_Do(b *testing.B) {
 
 }
 
-func benchmarkCircuitBreaker_Do(b *testing.B, breaker CircuitBreaker) {
+func benchmarkCircuitBreaker_Do(b *testing.B, breaker Interface) {
 
 	err := errors.New("some error")
 	task := func() error {

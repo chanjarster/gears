@@ -25,7 +25,7 @@ import (
 )
 
 type TokenBucket interface {
-	RateLimiter
+	Interface
 }
 
 // 令牌桶

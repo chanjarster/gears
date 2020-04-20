@@ -17,7 +17,7 @@
 
 package ratelimiter
 
-type RateLimiter interface {
+type Interface interface {
 	Acquire() (acquired bool)
 	Capacity() int
 }

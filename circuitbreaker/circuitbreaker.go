@@ -35,7 +35,7 @@ type onOpen func()
 
 // Following the following design:
 // https://martinfowler.com/bliki/CircuitBreaker.html
-type CircuitBreaker interface {
+type Interface interface {
 	// Do task
 	//  task: task should be done
 	//  onError: called when task returns error

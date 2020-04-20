@@ -44,7 +44,7 @@ func BenchmarkSyncFixedWindow_Acquire(b *testing.B) {
 	benchmarkTokenBucket_Acquire(b, bucket)
 }
 
-func benchmarkTokenBucket_Acquire(b *testing.B, bucket RateLimiter) {
+func benchmarkTokenBucket_Acquire(b *testing.B, bucket Interface) {
 	capacity := bucket.Capacity()
 	var acquiredCount int64
 
