@@ -5,7 +5,6 @@
 [![Coverage Status](https://coveralls.io/repos/github/chanjarster/gears/badge.svg?branch=master)](https://coveralls.io/github/chanjarster/gears?branch=master)
 
 
-
 ## Install
 
 ```bash
@@ -14,7 +13,4 @@ go get github.com/chanjarster/gears
 
 ## Documents
 
-* [conf](conf/README.md)
-* [ratelimiter](ratelimiter/README.md)
-* [circuitbreaker](circuitbreaker/README.md)
-
+https://pkg.go.dev/github.com/chanjarster/gears
