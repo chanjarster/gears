@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package autoconf
+package conf
 
 import (
 	"fmt"
+	"os"
 )
 
 type MyConf struct {
@@ -26,20 +26,39 @@ type MyConf struct {
 	Redis *RedisConf
 }
 
+func (c *MyConf) String() string {
+	return fmt.Sprint("{mysql: ", c.Mysql, ", redis: ", c.Redis, "}")
+}
+
 type MysqlConf struct {
-	Host string
-	Port int
+	Host     string
+	Port     int
 	Database string
 }
 
+func (c *MysqlConf) String() string {
+	return fmt.Sprint("{host: ", c.Host, ", port: ", c.Port, ", database: ", c.Database, "}")
+}
+
 type RedisConf struct {
-	Host string
-	Port int
+	Host     string
+	Port     int
 	Password string
 }
 
-func Example() {
+func (c *RedisConf) String() string {
+	return fmt.Sprint("{host: ", c.Host, ", port: ", c.Port, ", password: ", c.Password, "}")
+}
+
+func ExampleLoad() {
+	os.Setenv("MYSQL_HOST", "localhost")
+	os.Setenv("MYSQL_PORT", "3360")
+	os.Setenv("MYSQL_DATABASE", "test")
+	os.Setenv("REDIS_HOST", "localhost")
+	os.Setenv("REDIS_PORT", "6379")
+	os.Setenv("REDIS_PASSWORD", "foobar")
 	myConf := &MyConf{}
-	Load(myConf, "c")
+	Load(myConf, "conf")
 	fmt.Println(myConf)
+	// Output: {mysql: {host: localhost, port: 3360, database: test}, redis: {host: localhost, port: 6379, password: foobar}}
 }

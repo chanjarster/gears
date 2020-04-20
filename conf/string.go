@@ -14,8 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package autoconf
+package conf
 
 // Foo.BarBaz -> foo-bar-baz
 func flagStyle(path string) string {
