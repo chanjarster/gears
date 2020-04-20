@@ -14,8 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package autoconf
+package conf
 
 import (
 	"fmt"
@@ -38,7 +37,7 @@ type RedisConf struct {
 	Password string
 }
 
-func Example() {
+func ExampleLoad() {
 	myConf := &MyConf{}
 	Load(myConf, "c")
 	fmt.Println(myConf)
