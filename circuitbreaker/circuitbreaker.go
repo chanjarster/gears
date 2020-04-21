@@ -25,16 +25,6 @@ import (
 	"time"
 )
 
-// task func
-// return: error
-type task func() error
-
-// callback for error task returns
-type onError func(error)
-
-// callback for circuit break opened
-type onOpen func()
-
 // A circuit breaker has 3 states:
 //
 // open: no task will be executed
@@ -84,7 +74,7 @@ type SyncCircuitBreaker struct {
 	nowFn            gears.NowFunc // 获得当前时间的函数
 }
 
-func (s *SyncCircuitBreaker) Do(task task, onError onError, onOpen onOpen) {
+func (s *SyncCircuitBreaker) Do(task func() error, onError func(error), onOpen func()) {
 	switch s.state() {
 	case open:
 		onOpen()
@@ -139,7 +129,7 @@ var NeverOpen neverOpen
 
 type neverOpen struct{}
 
-func (n neverOpen) Do(task task, onError onError, onOpen onOpen) {
+func (n neverOpen) Do(task func() error, onError func(error), onOpen func()) {
 	if err := task(); err != nil {
 		onError(err)
 	}
