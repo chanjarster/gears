@@ -29,6 +29,8 @@ go:
 - 1.11.x
 - 1.10.x
 
+script: go test ${gobuild_args} ./...
+
 before_install:
 - go get -t -v ./...
 
