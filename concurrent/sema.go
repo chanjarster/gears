@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+// Concurrent utilities
 package concurrent
 
 import "sync"
@@ -30,10 +31,24 @@ type Semaphore interface {
 	TryAcquire() bool
 }
 
+// New a ChanSemaphore.
+//
+// permits: max permits this semaphore could be acquired.
 func NewChanSemaphore(permits int64) *ChanSemaphore {
 	return &ChanSemaphore{
 		permits: make(chan int, permits),
 	}
+}
+
+// New a LockSemaphore.
+//
+// permits: max permits this semaphore could be acquired.
+func NewLockSemaphore(permits int64) *LockSemaphore {
+	s := &LockSemaphore{
+		permits: permits,
+	}
+	s.notFull = sync.NewCond(&s.lock)
+	return s
 }
 
 // A Semaphore implementation using channel
@@ -65,15 +80,7 @@ func (s *ChanSemaphore) TryAcquire() bool {
 	}
 }
 
-func NewLockSemaphore(permits int64) *LockSemaphore {
-	s := &LockSemaphore{
-		permits: permits,
-	}
-	s.notFull = sync.NewCond(&s.lock)
-	return s
-}
-
-// A Semaphore implementation using Lock
+// A Semaphore implementation using sync.Mutex
 type LockSemaphore struct {
 	notFull *sync.Cond
 	lock    sync.Mutex

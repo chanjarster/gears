@@ -1,5 +1,5 @@
 /*
-A simple tool to load config from yaml, environment variables and flags by convention.
+Util help loading config from yaml, environment variables and flags by convention.
 
 example.go:
 

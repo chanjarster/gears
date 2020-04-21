@@ -28,16 +28,9 @@ type TokenBucket interface {
 	Interface
 }
 
-// 令牌桶
-type SyncTokenBucket struct {
-	lock               sync.Mutex
-	capacity           int   // 桶尺寸
-	tokens             int   // 令牌数量
-	issueRatePerSecond int   // 每秒签发token数量
-	lastIssueTimestamp int64 // 上一次签发的时间戳
-	nowFn              gears.NowFunc
-}
-
+// New a SyncTokenBucket
+//  capacity: token bucket's capacity
+//  issueRatePerSecond: token issuing rate(per second)
 func NewSyncTokenBucket(capacity, issueRatePerSecond int) TokenBucket {
 	return &SyncTokenBucket{
 		capacity:           capacity,
@@ -46,6 +39,29 @@ func NewSyncTokenBucket(capacity, issueRatePerSecond int) TokenBucket {
 		lastIssueTimestamp: gears.SysNow(),
 		nowFn:              gears.SysNow,
 	}
+}
+
+// New a AtomicTokenBucket
+//  capacity: token bucket's capacity
+//  issueRatePerSecond: token issuing rate(per second)
+func NewAtomicTokenBucket(capacity, issueRatePerSecond int) TokenBucket {
+	return &AtomicTokenBucket{
+		capacity:           capacity,
+		tokens:             int64(capacity),
+		issueRatePerSecond: issueRatePerSecond,
+		lastIssueTimestamp: gears.SysNow(),
+		nowFn:              gears.SysNow,
+	}
+}
+
+// TokenBucket implementation using "sync.Mutex"
+type SyncTokenBucket struct {
+	lock               sync.Mutex
+	capacity           int   // bucket capacity
+	tokens             int   // currently issued tokens amount
+	issueRatePerSecond int   // token issuing rate(per second)
+	lastIssueTimestamp int64 // last time of issuing tokens
+	nowFn              gears.NowFunc
 }
 
 func (t *SyncTokenBucket) Capacity() int {
@@ -87,22 +103,14 @@ func (t *SyncTokenBucket) issueIfNecessary() {
 	t.lastIssueTimestamp = now
 }
 
+// TokenBucket implementation using "sync/atomic" package.
+// Has better concurrent performance than SyncTokenBucket.
 type AtomicTokenBucket struct {
-	capacity           int   // 桶尺寸
-	tokens             int64 // 令牌数量
-	issueRatePerSecond int   // 每秒签发token数量
-	lastIssueTimestamp int64 // 上一次签发的时间戳
+	capacity           int   // bucket capacity
+	tokens             int64   // currently issued tokens amount
+	issueRatePerSecond int   // token issuing rate(per second)
+	lastIssueTimestamp int64 // last time of issuing tokens
 	nowFn              gears.NowFunc
-}
-
-func NewAtomicTokenBucket(capacity, issueRatePerSecond int) TokenBucket {
-	return &AtomicTokenBucket{
-		capacity:           capacity,
-		tokens:             int64(capacity),
-		issueRatePerSecond: issueRatePerSecond,
-		lastIssueTimestamp: gears.SysNow(),
-		nowFn:              gears.SysNow,
-	}
 }
 
 func (t *AtomicTokenBucket) Capacity() int {

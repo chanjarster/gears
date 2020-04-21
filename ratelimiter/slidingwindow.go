@@ -25,13 +25,18 @@ import (
 )
 
 // 滑动时间窗口限流器
-//  在当前时间往前的 windowSize 范围内，如果请求次数超过 capacity 那么就拒绝请求
-//  举个具体的例子，当前时间的往前 1分钟 内，如果请求次数超过了 100次 那么就拒绝请求，这样就限定了请求速率恒定在 100次/分钟
+//
+// 在当前时间往前的 windowSize 范围内，如果请求次数超过 capacity 那么就拒绝请求
+//
+// 举个具体的例子，当前时间的往前 1分钟 内，如果请求次数超过了 100次 那么就拒绝请求，这样就限定了请求速率恒定在 100次/分钟
 type SlidingWindow interface {
 	Interface
-	WindowSize() time.Duration
+	WindowSize() time.Duration // time range the window look back
 }
 
+// New a SyncFixedWindow.
+//  capacity: window capacity
+//  windowSize: time range the window look back
 func NewSyncSlidingWindow(capacity int, windowSize time.Duration) *SyncSlidingWindow {
 	return &SyncSlidingWindow{
 		capacity:   capacity,

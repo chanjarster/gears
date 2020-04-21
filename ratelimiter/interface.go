@@ -15,9 +15,12 @@
  * limitations under the License.
  */
 
+// Various rate limiter implementations: token bucket, sliding window, fixed window.
 package ratelimiter
 
 type Interface interface {
+	// Acquire a permission, return false if be rejected.
 	Acquire() (acquired bool)
+	// Get the rate limiter's capacity
 	Capacity() int
 }

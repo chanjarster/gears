@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+// CircuitBreaker following design:
+// https://martinfowler.com/bliki/CircuitBreaker.html
 package circuitbreaker
 
 import (
@@ -33,14 +35,20 @@ type onError func(error)
 // callback for circuit break opened
 type onOpen func()
 
-// Following the following design:
-// https://martinfowler.com/bliki/CircuitBreaker.html
+// A circuit breaker has 3 states:
+//
+// open: no task will be executed
+//
+// closed: task will be executed
+//
+// halfOpen: task will be executed, if failed, back to state of open,
+// if success, transfer to state of close
 type Interface interface {
 	// Do task
-	//  task: task should be done
-	//  onError: called when task returns error
-	//  onOpen: called if state == open
-	Do(task task, onError onError, onOpen onOpen)
+	//  task: task to be done
+	//  onError: handle errors returned from task
+	//  onOpen: be called if state == open
+	Do(task func() error, onError func(error), onOpen func())
 }
 
 //---------------------------
@@ -55,8 +63,10 @@ const (
 	halfOpen state = iota // 半开
 )
 
-//  failureThreshold: 出现几次错误就进入断开状态
-//  resetTimeout: 断开状态持续多长时间，进入半开状态
+// failureThreshold: once the failures reach this threshold, the circuit breaker will be opened
+//
+// resetTimeout: if circuit breaker is in state of open,
+// after this timeout, the circuit breaker will be in half-open state
 func NewSyncCircuitBreaker(failureThreshold int, resetTimeout time.Duration) *SyncCircuitBreaker {
 	return &SyncCircuitBreaker{
 		failureThreshold: failureThreshold,
@@ -124,7 +134,7 @@ func (s *SyncCircuitBreaker) reset() {
 // 永远不会断开的CircuitBreaker
 //---------------------------
 
-// 永远不会断开的CircuitBreaker
+// A circuit breaker would never be opened
 var NeverOpen neverOpen
 
 type neverOpen struct{}

@@ -25,8 +25,10 @@ import (
 )
 
 // 固定时间窗口限流器
-//  将时间按照 windowSize 分割一个一个interval，如果当前interval的请求次数超过了 capacity 那么就拒绝请求
-//  举个具体的例子，当前interval为(当前时间, 当前时间+1分钟]，在这个范围内如果请求次数超过了 100次 那么就拒绝请求
+//
+// 将时间按照 windowSize 分割一个一个interval，如果当前interval的请求次数超过了 capacity 那么就拒绝请求
+//
+// 举个具体的例子，当前interval为(当前时间, 当前时间+1分钟]，在这个范围内如果请求次数超过了 100次 那么就拒绝请求
 //
 // 固定时间窗口的问题在于，如果在前一个interval的结束和后一个interval的开始里请求数达到饱和，那么就会出现超量请求，看下图:
 //  |        o | o        |
@@ -41,6 +43,9 @@ type FixedWindow interface {
 	WindowSize() time.Duration
 }
 
+// New a SyncFixedWindow.
+//  capacity: window capacity
+//  windowSize: time interval for each window
 func NewSyncFixedWindow(capacity int, windowSize time.Duration) *SyncFixedWindow {
 	return &SyncFixedWindow{
 		capacity:   capacity,
