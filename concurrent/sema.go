@@ -22,12 +22,13 @@ import "sync"
 
 // Semaphore
 type Semaphore interface {
-	// Acquires a permit from this semaphore, blocking until one is available, or the thread is
+	// Acquire a permit from this semaphore, blocking until one is available.
 	Acquire()
-	// Releases a permit, returning it to the semaphore.
-	// Over release will not make the permits less than zero.
+	// Return a permit to the semaphore.
+	// Over release will not make the available permits exceeds capacity.
 	Release()
-	// Acquires a permit from this semaphore, only if one is available at the time of invocation.
+	// Acquire a permit from this semaphore, only if one is available at the time of invocation,
+	// never blocking.
 	TryAcquire() bool
 }
 
