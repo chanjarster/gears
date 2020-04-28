@@ -22,9 +22,9 @@ import (
 	"sync"
 )
 
-// A fan-out event bus. Sending a event to it, it will send it to all it's Receivers.
+// A fan-out event bus. Sending a event to it, it will dispatch events to all Receivers.
 type FanOutBus struct {
-	C           chan<- interface{} // a channel to receiving values
+	C           chan<- interface{} // a channel to send events
 	ch          chan interface{}   // internal channel(bidirectional), C is backed by this
 	recvMapLock sync.RWMutex
 	recvMap     map[string]*Receiver

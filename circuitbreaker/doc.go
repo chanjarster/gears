@@ -15,11 +15,6 @@
  * limitations under the License.
  */
 
-package ratelimiter
-
-type Interface interface {
-	// Acquire a permission, return false if be rejected.
-	Acquire() (acquired bool)
-	// Get the rate limiter's capacity
-	Capacity() int
-}
+// CircuitBreaker following design:
+// https://martinfowler.com/bliki/CircuitBreaker.html
+package circuitbreaker

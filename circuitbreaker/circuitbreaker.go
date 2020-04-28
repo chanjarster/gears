@@ -15,8 +15,6 @@
  * limitations under the License.
  */
 
-// CircuitBreaker following design:
-// https://martinfowler.com/bliki/CircuitBreaker.html
 package circuitbreaker
 
 import (

@@ -25,13 +25,17 @@ import (
 func Example_fanOutBus() {
 
 	bus := NewFanOutBus(1024)
+	bus.GoDispatch()
+
 	recvFoo := bus.NewRecv("foo", 1024)
 
 	go func() {
+		// send event
 		bus.C <- "hello"
 	}()
 
 	go func() {
+		// receive event
 		for v := range recvFoo.C {
 			fmt.Println(v)
 		}
@@ -39,8 +43,8 @@ func Example_fanOutBus() {
 
 	// make a new Receiver on the fly
 	recvBar := bus.NewRecv("bar", 1024)
-
 	go func() {
+		// receive event
 		for v := range recvBar.C {
 			fmt.Println(v)
 		}

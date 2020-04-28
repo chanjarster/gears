@@ -15,11 +15,5 @@
  * limitations under the License.
  */
 
-package ratelimiter
-
-type Interface interface {
-	// Acquire a permission, return false if be rejected.
-	Acquire() (acquired bool)
-	// Get the rate limiter's capacity
-	Capacity() int
-}
+// Event bus
+package event
