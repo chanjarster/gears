@@ -15,12 +15,21 @@
  * limitations under the License.
  */
 
-package gears
+package time
 
 import "time"
 
-type NowFunc func() int64
+// a function return "now"
+type NowFunc func() time.Time
 
-func SysNow() int64 {
-	return time.Now().UnixNano()
+// A NowFunc implementation that return time.Now()
+func SysNow() time.Time {
+	return time.Now()
+}
+
+// return a function that returns "now" you provided, useful in testing
+func FixedNow(nowTime time.Time) NowFunc {
+	return func() time.Time {
+		return nowTime
+	}
 }

@@ -19,7 +19,7 @@ package ratelimiter
 
 import (
 	"container/list"
-	"github.com/chanjarster/gears"
+	gtime "github.com/chanjarster/gears/time"
 	"sync"
 	"time"
 )
@@ -42,7 +42,7 @@ func NewSyncSlidingWindow(capacity int, windowSize time.Duration) *SyncSlidingWi
 		capacity:   capacity,
 		windowSize: int64(windowSize),
 		records:    list.New(),
-		nowFn:      gears.SysNow,
+		nowFn:      gtime.SysNow,
 	}
 }
 
@@ -51,11 +51,11 @@ type SyncSlidingWindow struct {
 	capacity   int
 	windowSize int64
 	records    *list.List // 请求记录，其实就是时间戳
-	nowFn      gears.NowFunc
+	nowFn      gtime.NowFunc
 }
 
 func (s *SyncSlidingWindow) Acquire() bool {
-	now := s.nowFn()
+	now := s.nowFn().UnixNano()
 
 	s.lock.Lock()
 	defer s.lock.Unlock()

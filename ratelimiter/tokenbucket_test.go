@@ -18,6 +18,7 @@
 package ratelimiter
 
 import (
+	gtime "github.com/chanjarster/gears/time"
 	"reflect"
 	"testing"
 	"time"
@@ -111,9 +112,9 @@ func testTokenBucket_Acquire(t *testing.T, new func() (TokenBucket, int)) {
 			}
 		}
 		if stb, ok := bucket.(*SyncTokenBucket); ok {
-			stb.nowFn = now(time.Now().Add(time.Millisecond * 1100).UnixNano())
+			stb.nowFn = gtime.FixedNow(time.Now().Add(time.Millisecond * 1100))
 		} else if atb, ok := bucket.(*AtomicTokenBucket); ok {
-			atb.nowFn = now(time.Now().Add(time.Millisecond * 1100).UnixNano())
+			atb.nowFn = gtime.FixedNow(time.Now().Add(time.Millisecond * 1100))
 		} else {
 			t.Errorf("Unsupported TokenBucket")
 		}

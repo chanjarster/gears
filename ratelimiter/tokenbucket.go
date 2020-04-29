@@ -18,7 +18,7 @@
 package ratelimiter
 
 import (
-	"github.com/chanjarster/gears"
+	gtime "github.com/chanjarster/gears/time"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -36,8 +36,8 @@ func NewSyncTokenBucket(capacity, issueRatePerSecond int) TokenBucket {
 		capacity:           capacity,
 		tokens:             capacity,
 		issueRatePerSecond: issueRatePerSecond,
-		lastIssueTimestamp: gears.SysNow(),
-		nowFn:              gears.SysNow,
+		lastIssueTimestamp: gtime.SysNow().UnixNano(),
+		nowFn:              gtime.SysNow,
 	}
 }
 
@@ -49,8 +49,8 @@ func NewAtomicTokenBucket(capacity, issueRatePerSecond int) TokenBucket {
 		capacity:           capacity,
 		tokens:             int64(capacity),
 		issueRatePerSecond: issueRatePerSecond,
-		lastIssueTimestamp: gears.SysNow(),
-		nowFn:              gears.SysNow,
+		lastIssueTimestamp: gtime.SysNow().UnixNano(),
+		nowFn:              gtime.SysNow,
 	}
 }
 
@@ -61,7 +61,7 @@ type SyncTokenBucket struct {
 	tokens             int   // currently issued tokens amount
 	issueRatePerSecond int   // token issuing rate(per second)
 	lastIssueTimestamp int64 // last time of issuing tokens
-	nowFn              gears.NowFunc
+	nowFn              gtime.NowFunc
 }
 
 func (t *SyncTokenBucket) Capacity() int {
@@ -86,7 +86,7 @@ func (t *SyncTokenBucket) issueIfNecessary() {
 	if t.tokens >= t.capacity {
 		return
 	}
-	now := t.nowFn()
+	now := t.nowFn().UnixNano()
 
 	elapse := now - t.lastIssueTimestamp
 	delta := elapse / int64(time.Second) * int64(t.issueRatePerSecond)
@@ -107,10 +107,10 @@ func (t *SyncTokenBucket) issueIfNecessary() {
 // Has better concurrent performance than SyncTokenBucket.
 type AtomicTokenBucket struct {
 	capacity           int   // bucket capacity
-	tokens             int64   // currently issued tokens amount
+	tokens             int64 // currently issued tokens amount
 	issueRatePerSecond int   // token issuing rate(per second)
 	lastIssueTimestamp int64 // last time of issuing tokens
-	nowFn              gears.NowFunc
+	nowFn              gtime.NowFunc
 }
 
 func (t *AtomicTokenBucket) Capacity() int {
@@ -144,9 +144,10 @@ func (t *AtomicTokenBucket) issueIfNecessary() {
 		}
 
 		oldLit := atomic.LoadInt64(&t.lastIssueTimestamp)
-		now := t.nowFn()
+		now := t.nowFn().UnixNano()
 
-		elapse := now - oldLit
+		nowNano := now
+		elapse := nowNano - oldLit
 		delta := elapse / int64(time.Second) * int64(t.issueRatePerSecond)
 
 		if delta == 0 {
@@ -162,7 +163,7 @@ func (t *AtomicTokenBucket) issueIfNecessary() {
 			continue
 		}
 
-		s2 := atomic.CompareAndSwapInt64(&t.lastIssueTimestamp, oldLit, now)
+		s2 := atomic.CompareAndSwapInt64(&t.lastIssueTimestamp, oldLit, nowNano)
 		if !s2 {
 			if s1 {
 				atomic.AddInt64(&t.tokens, -delta)

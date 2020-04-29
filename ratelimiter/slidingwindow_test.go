@@ -19,6 +19,7 @@ package ratelimiter
 
 import (
 	"container/list"
+	gtime "github.com/chanjarster/gears/time"
 	"reflect"
 	"testing"
 	"time"
@@ -82,7 +83,7 @@ func TestSyncSlidingWindow_Acquire(t *testing.T) {
 				t.Errorf("acquire() = %v, want %v", got, true)
 			}
 		}
-		ratelimiter.nowFn = now(time.Now().Add(60 * time.Millisecond).UnixNano())
+		ratelimiter.nowFn = gtime.FixedNow(time.Now().Add(60 * time.Millisecond))
 		if got := ratelimiter.Acquire(); !got {
 			t.Errorf("acquire() = %v, want %v", got, true)
 		}

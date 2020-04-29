@@ -19,15 +19,16 @@ package circuitbreaker
 
 import (
 	"errors"
+	gtime "github.com/chanjarster/gears/time"
 	"testing"
 	"time"
 )
 
 var (
-	nowTs     = time.Now().UnixNano()
-	mockNowFn = func() int64 {
-		return nowTs
-	}
+	nowTs     = time.Now()
+	//mockNowFn = func() int64 {
+	//	return nowTs
+	//}
 )
 
 func TestNewSyncCircuitBreaker(t *testing.T) {
@@ -58,7 +59,7 @@ func TestSyncCircuitBreaker_Do(t *testing.T) {
 			failures:         0,
 			failureThreshold: 1,
 			resetTimeout:     1000,
-			nowFn:            mockNowFn,
+			nowFn:            gtime.FixedNow(nowTs),
 		}
 		successTimes := 0
 		onErrorTimes := 0
@@ -93,7 +94,7 @@ func TestSyncCircuitBreaker_Do(t *testing.T) {
 			failures:         0,
 			failureThreshold: 1,
 			resetTimeout:     1000,
-			nowFn:            mockNowFn,
+			nowFn:            gtime.FixedNow(nowTs),
 		}
 		successTimes := 0
 
@@ -133,7 +134,7 @@ func TestSyncCircuitBreaker_Do(t *testing.T) {
 			failures:         0,
 			failureThreshold: 1,
 			resetTimeout:     1000,
-			nowFn:            mockNowFn,
+			nowFn:            gtime.FixedNow(nowTs),
 		}
 		successTimes := 0
 
@@ -173,7 +174,7 @@ func TestSyncCircuitBreaker_Do(t *testing.T) {
 			failures:         0,
 			failureThreshold: 1,
 			resetTimeout:     10,
-			nowFn:            mockNowFn,
+			nowFn:            gtime.FixedNow(nowTs),
 		}
 
 		successTimes := 0
@@ -193,7 +194,7 @@ func TestSyncCircuitBreaker_Do(t *testing.T) {
 			onOpenTimes++
 		}
 		cb.Do(failureTask, onError, onOpen)
-		nowTs += 100 // mock reset timeout
+		cb.nowFn = gtime.FixedNow(nowTs.Add(time.Nanosecond * 100)) // mock reset timeout
 		cb.Do(successTask, onError, onOpen)
 
 		if got, want := successTimes, 1; got != want {
@@ -216,7 +217,7 @@ func TestSyncCircuitBreaker_recordFailure(t *testing.T) {
 		cb := &SyncCircuitBreaker{
 			lastFailureTs: 10,
 			failures:      5,
-			nowFn:         mockNowFn,
+			nowFn:         gtime.FixedNow(nowTs),
 		}
 		cb.recordFailure()
 		if cb.failures != 6 {
@@ -252,7 +253,7 @@ func TestSyncCircuitBreaker_state(t *testing.T) {
 		lastFailureTs    int64
 		failures         int
 		resetTimeout     int64
-		nowFn            func() int64
+		nowFn            gtime.NowFunc
 	}
 
 	tests := []struct {
@@ -264,10 +265,10 @@ func TestSyncCircuitBreaker_state(t *testing.T) {
 			name: "failureThreshold:0, failures:0, not reach resetTimeout",
 			fields: fields{
 				failureThreshold: 0,
-				lastFailureTs:    nowTs - 1,
+				lastFailureTs:    nowTs.UnixNano() - 1,
 				failures:         0,
 				resetTimeout:     10,
-				nowFn:            mockNowFn,
+				nowFn:            gtime.FixedNow(nowTs),
 			},
 			want: open,
 		},
@@ -275,10 +276,10 @@ func TestSyncCircuitBreaker_state(t *testing.T) {
 			name: "failureThreshold:0, failures:0, reach resetTimeout",
 			fields: fields{
 				failureThreshold: 0,
-				lastFailureTs:    nowTs - 11,
+				lastFailureTs:    nowTs.UnixNano() - 11,
 				failures:         0,
 				resetTimeout:     10,
-				nowFn:            mockNowFn,
+				nowFn:            gtime.FixedNow(nowTs),
 			},
 			want: halfOpen,
 		},
@@ -286,10 +287,10 @@ func TestSyncCircuitBreaker_state(t *testing.T) {
 			name: "failureThreshold:1, failures:1, not reach resetTimeout",
 			fields: fields{
 				failureThreshold: 1,
-				lastFailureTs:    nowTs - 1,
+				lastFailureTs:    nowTs.UnixNano() - 1,
 				failures:         1,
 				resetTimeout:     10,
-				nowFn:            mockNowFn,
+				nowFn:            gtime.FixedNow(nowTs),
 			},
 			want: open,
 		},
@@ -297,10 +298,10 @@ func TestSyncCircuitBreaker_state(t *testing.T) {
 			name: "failureThreshold:1, failures:1, reach resetTimeout",
 			fields: fields{
 				failureThreshold: 1,
-				lastFailureTs:    nowTs - 11,
+				lastFailureTs:    nowTs.UnixNano() - 11,
 				failures:         1,
 				resetTimeout:     10,
-				nowFn:            mockNowFn,
+				nowFn:            gtime.FixedNow(nowTs),
 			},
 			want: halfOpen,
 		},
@@ -308,10 +309,10 @@ func TestSyncCircuitBreaker_state(t *testing.T) {
 			name: "failureThreshold:1, failures:2, not reach resetTimeout",
 			fields: fields{
 				failureThreshold: 1,
-				lastFailureTs:    nowTs - 1,
+				lastFailureTs:    nowTs.UnixNano() - 1,
 				failures:         2,
 				resetTimeout:     10,
-				nowFn:            mockNowFn,
+				nowFn:            gtime.FixedNow(nowTs),
 			},
 			want: open,
 		},
@@ -319,10 +320,10 @@ func TestSyncCircuitBreaker_state(t *testing.T) {
 			name: "failureThreshold:1, failures:2, reach resetTimeout",
 			fields: fields{
 				failureThreshold: 1,
-				lastFailureTs:    nowTs - 11,
+				lastFailureTs:    nowTs.UnixNano() - 11,
 				failures:         2,
 				resetTimeout:     10,
-				nowFn:            mockNowFn,
+				nowFn:            gtime.FixedNow(nowTs),
 			},
 			want: halfOpen,
 		},
@@ -333,7 +334,7 @@ func TestSyncCircuitBreaker_state(t *testing.T) {
 				lastFailureTs:    0,
 				failures:         0,
 				resetTimeout:     10,
-				nowFn:            mockNowFn,
+				nowFn:            gtime.FixedNow(nowTs),
 			},
 			want: closed,
 		},
@@ -341,10 +342,10 @@ func TestSyncCircuitBreaker_state(t *testing.T) {
 			name: "failureThreshold:2, failures:1",
 			fields: fields{
 				failureThreshold: 2,
-				lastFailureTs:    nowTs,
+				lastFailureTs:    nowTs.UnixNano(),
 				failures:         1,
 				resetTimeout:     10,
-				nowFn:            mockNowFn,
+				nowFn:            gtime.FixedNow(nowTs),
 			},
 			want: closed,
 		},

@@ -18,7 +18,7 @@
 package ratelimiter
 
 import (
-	"github.com/chanjarster/gears"
+	gtime "github.com/chanjarster/gears/time"
 	"math"
 	"sync"
 	"time"
@@ -50,7 +50,7 @@ func NewSyncFixedWindow(capacity int, windowSize time.Duration) *SyncFixedWindow
 	return &SyncFixedWindow{
 		capacity:   capacity,
 		windowSize: int64(windowSize),
-		nowFn:      gears.SysNow,
+		nowFn:      gtime.SysNow,
 	}
 }
 
@@ -60,11 +60,11 @@ type SyncFixedWindow struct {
 	windowSize int64
 	until      int64 // 该时间窗口能够覆盖到的未来的某个时间
 	count      int   // 时间窗口里的请求数量
-	nowFn      gears.NowFunc
+	nowFn      gtime.NowFunc
 }
 
 func (s *SyncFixedWindow) Acquire() bool {
-	now := s.nowFn()
+	now := s.nowFn().UnixNano()
 
 	s.lock.Lock()
 	defer s.lock.Unlock()

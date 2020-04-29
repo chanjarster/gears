@@ -18,17 +18,12 @@
 package ratelimiter
 
 import (
-	"github.com/chanjarster/gears"
+	gtime "github.com/chanjarster/gears/time"
 	"reflect"
 	"testing"
 	"time"
 )
 
-func now(n int64) gears.NowFunc {
-	return func() int64 {
-		return n
-	}
-}
 
 func TestNewSyncFixedWindow(t *testing.T) {
 	cap := 500
@@ -88,7 +83,7 @@ func TestSyncFixedWindow_Acquire(t *testing.T) {
 				t.Errorf("acquire() = %v, want %v", got, true)
 			}
 		}
-		ratelimiter.nowFn = now(time.Now().Add(time.Millisecond * 60).UnixNano())
+		ratelimiter.nowFn = gtime.FixedNow(time.Now().Add(time.Millisecond * 60))
 
 		if got := ratelimiter.Acquire(); !got {
 			t.Errorf("acquire() = %v, want %v", got, true)

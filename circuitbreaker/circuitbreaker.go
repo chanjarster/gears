@@ -18,7 +18,7 @@
 package circuitbreaker
 
 import (
-	"github.com/chanjarster/gears"
+	gtime "github.com/chanjarster/gears/time"
 	"sync"
 	"time"
 )
@@ -59,7 +59,7 @@ func NewSyncCircuitBreaker(failureThreshold int, resetTimeout time.Duration) *Sy
 	return &SyncCircuitBreaker{
 		failureThreshold: failureThreshold,
 		resetTimeout:     int64(resetTimeout),
-		nowFn:            gears.SysNow,
+		nowFn:            gtime.SysNow,
 	}
 }
 
@@ -69,7 +69,7 @@ type SyncCircuitBreaker struct {
 	lastFailureTs    int64         // 上次失败的时间戳
 	failures         int           // 失败次数
 	resetTimeout     int64         // 当断开之后多久，把断路器重置到half-open状态
-	nowFn            gears.NowFunc // 获得当前时间的函数
+	nowFn            gtime.NowFunc // 获得当前时间的函数
 }
 
 func (s *SyncCircuitBreaker) Do(task func() error, onError func(error), onOpen func()) {
@@ -93,7 +93,7 @@ func (s *SyncCircuitBreaker) recordFailure() {
 	defer s.lock.Unlock()
 
 	s.failures++
-	s.lastFailureTs = s.nowFn()
+	s.lastFailureTs = s.nowFn().UnixNano()
 }
 
 func (s *SyncCircuitBreaker) state() state {
@@ -101,7 +101,7 @@ func (s *SyncCircuitBreaker) state() state {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
 
-	if s.failures >= s.failureThreshold && (now-s.lastFailureTs) > s.resetTimeout {
+	if s.failures >= s.failureThreshold && (now.UnixNano()-s.lastFailureTs) > s.resetTimeout {
 		return halfOpen
 	} else if s.failures >= s.failureThreshold {
 		return open
