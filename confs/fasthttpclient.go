@@ -27,11 +27,37 @@ import (
 	"time"
 )
 
+// Config keys:
+//  | Environment            |  Flag                   |  Description                              |
+//  |------------------------|-------------------------|-------------------------------------------|
+//  | CERT_CHAIN             | -cert-chain             | Path to cert when communicate client auth |
+//  |                        |                         | enabled origin server, including          |
+//  |                        |                         | intermediate certs. x.509 pem encoded.    |
+//  | PRIVATE_KEY            | -private-key            | Path to private key when communicate      |
+//  |                        |                         | client auth enabled origin server,        |
+//  |                        |                         | including intermediate certs.             |
+//  |                        |                         | PKCS #1 pem encoded.                      |
+//  | SSL_TRUST_MODE         | -ssl-trust-mode         | Trust mode when verifying server          |
+//  |                        |                         | certificates. Available modes are:        |
+//  |                        |                         | OS: use host root CA set.                 |
+//  |                        |                         | INSECURE: do not verify.                  |
+//  |                        |                         | CUSTOM: verify by custom cert.            |
+//  | SSL_TRUST_CERTS        | -ssl-trust-certs        | Path to certificates that clients use     |
+//  |                        |                         | when verifying server certificates, only  |
+//  |                        |                         | useful when client-ssl-trust-mode set     |
+//  |                        |                         | to CUSTOM. X.509 PEM encoded              |
+//  | READ_TIMEOUT           | -read-timeout           |                                           |
+//  | WRITE_TIMEOUT          | -write-timeout          |                                           |
+//  | MAX_CONN_DURATION      | -max-conn-duration      |                                           |
+//  | MAX_CONNS_PER_HOST     | -max-conns-per-host     |                                           |
+//  | MAX_IDLE_CONN_DURATION | -max-idle-conn-duration |                                           |
+//  | MAX_CONN_WAIT_TIMEOUT  | -max-conn-wait-timeout  |                                           |
+// Note: if FastHttpClientConf is nested in another struct, add corresponding prefix.
 type FastHttpClientConf struct {
-	CertChain     string // cert when communicate client auth enabled origin server, including intermediate certs. x.509 pem encoded.
-	PrivateKey    string // private key when communicate client auth enabled origin server, including intermediate certs. PKCS #1 pem encoded.
-	SslTrustMode  string // trust mode when verifying server certificates. Available modes are OS: use host root CA set. INSECURE: do not verify. CUSTOM: verify by custom cert.
-	SslTrustCerts string // certificate that clients use when verifying server certificates, only useful when client-ssl-trust-mode set to CUSTOM. X.509 PEM encoded
+	CertChain     string // Path to cert when communicate client auth enabled origin server, including intermediate certs. x.509 pem encoded.
+	PrivateKey    string // Path to private key when communicate client auth enabled origin server, including intermediate certs. PKCS #1 pem encoded.
+	SslTrustMode  string // Trust mode when verifying server certificates. Available modes are OS: use host root CA set. INSECURE: do not verify. CUSTOM: verify by custom cert.
+	SslTrustCerts string // Path to certificates that clients use when verifying server certificates, only useful when client-ssl-trust-mode set to CUSTOM. X.509 PEM encoded
 
 	ReadTimeout         time.Duration
 	WriteTimeout        time.Duration

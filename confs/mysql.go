@@ -24,6 +24,24 @@ import (
 	"time"
 )
 
+// Config keys:
+//  | Environment       |  Flag              |  Description                                               |
+//  |-------------------|--------------------|------------------------------------------------------------|
+//  | HOST              | -host              |                                                            |
+//  | PORT              | -port              |                                                            |
+//  | USERNAME          | -username          |                                                            |
+//  | PASSWORD          | -password          |                                                            |
+//  | DATABASE          | -database          |                                                            |
+//  | MAX_OPEN_CONNS    | -max-open-conns    | Maximum number of open connections to the database.        |
+//  |                   |                    | If == 0 means unlimited                                    |
+//  | MAX_IDLE_CONNS    | -max-idle-conns    | Maximum number of connections in the idle connection pool. |
+//  |                   |                    | If == 0 no idle connections are retained                   |
+//  | CONN_MAX_LIFETIME | -conn-max-lifetime | Maximum amount of time a connection may be reused.         |
+//  |                   |                    | If == 0, connections are reused forever.                   |
+//  | READ_TIMEOUT      | -read-timeout      | I/O read timeout                                           |
+//  | WRITE_TIMEOUT     | -write-timeout     | I/O write timeout                                          |
+//  | TIMEOUT           | -timeout           | Timeout for establishing connections, aka dial timeout.    |
+// Note: if MysqlConf is nested in another struct, add corresponding prefix.
 // more details: https://github.com/go-sql-driver/mysql
 type MysqlConf struct {
 	Host     string // MySQL host
@@ -42,8 +60,8 @@ type MysqlConf struct {
 }
 
 func (m *MysqlConf) String() string {
-	return fmt.Sprintf("{Host: %s, Port: %d, Username: ***, Password: ***, Database: %s}",
-		m.Host, m.Port, m.Database)
+	return fmt.Sprintf("{Host: %s, Port: %d, Username: ***, Password: ***, Database: %s, MaxOpenConns: %v, MaxIdleConns: %v, ConnMaxLifetime: %v, ReadTimeout: %v, WriteTimeout: %v, Timeout: %v}",
+		m.Host, m.Port, m.Database, m.MaxIdleConns, m.MaxIdleConns, m.ConnMaxLifetime, m.ReadTimeout, m.WriteTimeout, m.Timeout)
 }
 
 type MysqlConfigCustomizer func(mc *mysql.Config)

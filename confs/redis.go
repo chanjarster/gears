@@ -23,6 +23,15 @@ import (
 	"strconv"
 )
 
+// Config keys:
+//  | Environment   |  Flag     |  Description             |
+//  |---------------|-----------|--------------------------|
+//  | HOST          | -host     |                          |
+//  | PORT          | -port     |                          |
+//  | PASSWORD      | -password |                          |
+//  | POOL          | -pool     | Connection pool size     |
+//  | MIN_IDLE      | -min-idle | Minimal idle connections |
+// Note: if RedisConf is nested in another struct, add corresponding prefix.
 type RedisConf struct {
 	Host     string // Redis host
 	Port     int    // Redis port
