@@ -21,6 +21,7 @@ import (
 	"github.com/chanjarster/gears/conf"
 	"github.com/go-redis/redis/v7"
 	"github.com/go-sql-driver/mysql"
+	"github.com/valyala/fasthttp"
 )
 
 func ExampleNewRedisClient() {
@@ -42,4 +43,14 @@ func ExampleNewMySqlDb() {
 	}
 	mySqlDb := NewMySqlDb(mysqlConf, customizer)
 	mySqlDb.Close()
+}
+
+func ExampleNewFastHttpClient() {
+	hcConf := &FastHttpClientConf{}
+	conf.Load(hcConf, "")
+	customizer := func(hc *fasthttp.Client) {
+		// do something
+	}
+	hc := NewFastHttpClient(hcConf, customizer)
+	hc.Get(make([]byte, 0), "https://baidu.com")
 }
