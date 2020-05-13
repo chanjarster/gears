@@ -21,7 +21,6 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/go-sql-driver/mysql"
-	"log"
 	"time"
 )
 
@@ -56,7 +55,7 @@ func NewMySqlDb(conf *MysqlConf, customizer MysqlConfigCustomizer) *sql.DB {
 	dsn := mc.FormatDSN()
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
-		log.Fatal(err)
+		errLogger.Fatal(err)
 		panic(err)
 	}
 	db.SetMaxOpenConns(conf.MaxOpenConns)
@@ -65,11 +64,11 @@ func NewMySqlDb(conf *MysqlConf, customizer MysqlConfigCustomizer) *sql.DB {
 
 	err = db.Ping()
 	if err != nil {
-		log.Fatal("MySQL connection error: ", err)
+		errLogger.Fatal("MySQL connection error: ", err)
 		panic(err)
 	}
 
-	log.Printf("Connected to MySQL: %s:%d", conf.Host, conf.Port)
+	stdLogger.Printf("Connected to MySQL: %s:%d", conf.Host, conf.Port)
 	return db
 }
 

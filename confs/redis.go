@@ -20,7 +20,6 @@ package confs
 import (
 	"fmt"
 	"github.com/go-redis/redis/v7"
-	"log"
 	"strconv"
 )
 
@@ -41,11 +40,10 @@ func NewRedisClient(rc *RedisConf, customizer RedisOptionCustomizer) *redis.Clie
 	client := redis.NewClient(redisOpts)
 	_, err := client.Ping().Result()
 	if err != nil {
-		log.Fatal("Redis connection error: ", err)
-		panic(err)
+		errLogger.Fatal("Redis connection error: ", err)
 	}
 
-	log.Printf("Connected to Redis: %s:%d\n", rc.Host, rc.Port)
+	stdLogger.Printf("Connected to Redis: %s:%d\n", rc.Host, rc.Port)
 	return client
 
 }
