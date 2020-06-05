@@ -37,6 +37,7 @@ func Test_prepareMySqlNativeConfig(t *testing.T) {
 		ReadTimeout:     time.Second * 1,
 		WriteTimeout:    time.Second * 2,
 		Timeout:         time.Second * 3,
+		Params:          "foo=1&bar=2&loo=%20",
 	}
 	customizer := func(mc *mysql.Config) {
 		mc.Params["autocommit"] = "true"
@@ -58,18 +59,27 @@ func Test_prepareMySqlNativeConfig(t *testing.T) {
 		t.Errorf("mc.DBName = %v, want %v", got, want)
 	}
 	if got, want := mc.ReadTimeout, mysqlConf.ReadTimeout; got != want {
-		t.Errorf("mc.Addr = %v, want %v", got, want)
+		t.Errorf("mc.ReadTimeout = %v, want %v", got, want)
 	}
 	if got, want := mc.WriteTimeout, mysqlConf.WriteTimeout; got != want {
-		t.Errorf("mc.Addr = %v, want %v", got, want)
+		t.Errorf("mc.WriteTimeout = %v, want %v", got, want)
 	}
 	if got, want := mc.Timeout, mysqlConf.Timeout; got != want {
-		t.Errorf("mc.Addr = %v, want %v", got, want)
+		t.Errorf("mc.Timeout = %v, want %v", got, want)
 	}
 	if got, want := mc.Params["autocommit"], "true"; got != want {
-		t.Errorf("mc.Addr = %v, want %v", got, want)
+		t.Errorf("mc.Params[\"autocommit\"] = %v, want %v", got, want)
 	}
 	if got, want := mc.Params["charset"], "utf8"; got != want {
-		t.Errorf("mc.Addr = %v, want %v", got, want)
+		t.Errorf("mc.Params[\"charset\"] = %v, want %v", got, want)
+	}
+	if got, want := mc.Params["foo"], "1"; got != want {
+		t.Errorf("mc.Params[\"foo\"] = %v, want %v", got, want)
+	}
+	if got, want := mc.Params["bar"], "2"; got != want {
+		t.Errorf("mc.Params[\"bar\"] = %v, want %v", got, want)
+	}
+	if got, want := mc.Params["loo"], " "; got != want {
+		t.Errorf("mc.Params[\"loo\"] = %v, want %v", got, want)
 	}
 }

@@ -21,6 +21,8 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/go-sql-driver/mysql"
+	"net/url"
+	"strings"
 	"time"
 )
 
@@ -41,6 +43,7 @@ import (
 //  | READ_TIMEOUT      | -read-timeout      | I/O read timeout                                           |
 //  | WRITE_TIMEOUT     | -write-timeout     | I/O write timeout                                          |
 //  | TIMEOUT           | -timeout           | Timeout for establishing connections, aka dial timeout.    |
+//  | PARAMS            |                    | Connection parameters, eg, foo=1&bar=%20           |
 // Note: if MysqlConf is nested in another struct, add corresponding prefix.
 // more details: https://github.com/go-sql-driver/mysql
 type MysqlConf struct {
@@ -57,11 +60,13 @@ type MysqlConf struct {
 	ReadTimeout  time.Duration
 	WriteTimeout time.Duration
 	Timeout      time.Duration
+
+	Params       string
 }
 
 func (m *MysqlConf) String() string {
-	return fmt.Sprintf("{Host: %s, Port: %d, Username: ***, Password: ***, Database: %s, MaxOpenConns: %v, MaxIdleConns: %v, ConnMaxLifetime: %v, ReadTimeout: %v, WriteTimeout: %v, Timeout: %v}",
-		m.Host, m.Port, m.Database, m.MaxIdleConns, m.MaxIdleConns, m.ConnMaxLifetime, m.ReadTimeout, m.WriteTimeout, m.Timeout)
+	return fmt.Sprintf("{Host: %s, Port: %d, Username: ***, Password: ***, Database: %s, MaxOpenConns: %v, MaxIdleConns: %v, ConnMaxLifetime: %v, ReadTimeout: %v, WriteTimeout: %v, Timeout: %v, Params: %v}",
+		m.Host, m.Port, m.Database, m.MaxIdleConns, m.MaxIdleConns, m.ConnMaxLifetime, m.ReadTimeout, m.WriteTimeout, m.Timeout, m.Params)
 }
 
 type MysqlConfigCustomizer func(mc *mysql.Config)
@@ -100,7 +105,22 @@ func prepareMySqlNativeConfig(conf *MysqlConf, customizer MysqlConfigCustomizer)
 	mc.Net = "tcp"
 	mc.Addr = fmt.Sprintf("%s:%d", conf.Host, conf.Port)
 	mc.DBName = conf.Database
-	mc.Params = make(map[string]string)
+	mc.Params = make(map[string]string,0)
+
+	if conf.Params != "" {
+		strs := strings.Split(conf.Params, "&")
+		for _, str := range strs{
+			p := strings.Split(str, "=")
+			if len(p) != 2 {
+				continue
+			}
+			unescape, err := url.QueryUnescape(p[1])
+			if err != nil {
+				continue
+			}
+			mc.Params[p[0]] = unescape
+		}
+	}
 
 	if customizer != nil {
 		customizer(mc)
