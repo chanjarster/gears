@@ -27,7 +27,7 @@ go:
 - 1.13.x
 - 1.12.x
 - 1.11.x
-- 1.10.x
+# - 1.10.x
 
 script: go test ${gobuild_args} -v ./...
 
@@ -60,5 +60,7 @@ jobs:
     - go test -race -v ./...
 
 env:
- global:
-   secure: "jksqPzzIqEA1Y74v0u/X9uAtDllz3pSFy9HAWP1qaMxjv7du7m6NuHDKma6pZRLAZ9donyD2xa1dQUg7j7OmT+FViOtAdOh6f0JkR03UjPVsM54aFhtsmg/ncCno4hZWAwLh/UpcLsuTjKU6bK1Xhyhal/OcIThzCEX0tXz/QMGUt3XQUq7vm+ziDw4yv5jhhKr4TkMnsZu/jMw4e39vFqD+EjCMqqO+JrLzxl7wW8UUZVwu/RABjYZYWiHSoMMzhv8hvHkKSYXKOb/t0F2CcPyZwsCdLs4bu4yT2KOA8GYJAj/KQb+lNtLkLUI1S5ylIKMtXwfGH9M9zt4drQjlNeUhLfeEEYergVqPyHj8yKIttpRPy8UbR31CyV3i6DYhzUa9wO29fMUBvJo+Dhw8KBK6kxKoJyTi7l2F+IOkueURl6bS+d43R8r98IHlHrrJzFZr/4X0if3lTfPXWZBVsGygVpz5vwiPStSo8JUokUka4hJIJCLX0psZhe1EJdo/ibMOZjQSnBIgaPeIHnchL/MgW/Vp1/lnf1K+BBt+t8oxhTdPxvt1kNI3zPsHu6MedsOiFFZTY2KcfnDoyEoQ3Qt+E4zrBrlC/GNzwUI+z/MDXkG4QR4s1ultxHbGfF/9Z81cKtRyPwBwOx/n8IXR2La3CZSiedyZRAdg/Zg4BzU="
+  global:
+    - secure: "jksqPzzIqEA1Y74v0u/X9uAtDllz3pSFy9HAWP1qaMxjv7du7m6NuHDKma6pZRLAZ9donyD2xa1dQUg7j7OmT+FViOtAdOh6f0JkR03UjPVsM54aFhtsmg/ncCno4hZWAwLh/UpcLsuTjKU6bK1Xhyhal/OcIThzCEX0tXz/QMGUt3XQUq7vm+ziDw4yv5jhhKr4TkMnsZu/jMw4e39vFqD+EjCMqqO+JrLzxl7wW8UUZVwu/RABjYZYWiHSoMMzhv8hvHkKSYXKOb/t0F2CcPyZwsCdLs4bu4yT2KOA8GYJAj/KQb+lNtLkLUI1S5ylIKMtXwfGH9M9zt4drQjlNeUhLfeEEYergVqPyHj8yKIttpRPy8UbR31CyV3i6DYhzUa9wO29fMUBvJo+Dhw8KBK6kxKoJyTi7l2F+IOkueURl6bS+d43R8r98IHlHrrJzFZr/4X0if3lTfPXWZBVsGygVpz5vwiPStSo8JUokUka4hJIJCLX0psZhe1EJdo/ibMOZjQSnBIgaPeIHnchL/MgW/Vp1/lnf1K+BBt+t8oxhTdPxvt1kNI3zPsHu6MedsOiFFZTY2KcfnDoyEoQ3Qt+E4zrBrlC/GNzwUI+z/MDXkG4QR4s1ultxHbGfF/9Z81cKtRyPwBwOx/n8IXR2La3CZSiedyZRAdg/Zg4BzU="
+  jobs:
+    - GO111MODULE=on
