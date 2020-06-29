@@ -37,6 +37,8 @@ func Test_prepareMySqlNativeConfig(t *testing.T) {
 		ReadTimeout:     time.Second * 1,
 		WriteTimeout:    time.Second * 2,
 		Timeout:         time.Second * 3,
+		Loc:             "Asia/Shanghai",
+		ParseTime:       true,
 		Params:          "foo=1&bar=2&loo=%20",
 	}
 	customizer := func(mc *mysql.Config) {
@@ -67,6 +69,12 @@ func Test_prepareMySqlNativeConfig(t *testing.T) {
 	if got, want := mc.Timeout, mysqlConf.Timeout; got != want {
 		t.Errorf("mc.Timeout = %v, want %v", got, want)
 	}
+	if got, want := mc.ParseTime, mysqlConf.ParseTime; got != want {
+		t.Errorf("mc.ParseTime = %v, want %v", got, want)
+	}
+	if got, want := mc.Loc.String(), mysqlConf.Loc; got != want {
+		t.Errorf("mc.Loc = %v, want %v", got, want)
+	}
 	if got, want := mc.Params["autocommit"], "true"; got != want {
 		t.Errorf("mc.Params[\"autocommit\"] = %v, want %v", got, want)
 	}
@@ -82,4 +90,24 @@ func Test_prepareMySqlNativeConfig(t *testing.T) {
 	if got, want := mc.Params["loo"], " "; got != want {
 		t.Errorf("mc.Params[\"loo\"] = %v, want %v", got, want)
 	}
+}
+
+func testNewMySqlDb(t *testing.T) {
+	mysqlConf := &MysqlConf{
+		Host:            "localhost",
+		Port:            3306,
+		Username:        "platform_openapi",
+		Password:        "platform_openapi",
+		Database:        "platform_openapi",
+		MaxOpenConns:    1,
+		MaxIdleConns:    1,
+		ConnMaxLifetime: time.Second * 5,
+		ReadTimeout:     time.Second * 1,
+		WriteTimeout:    time.Second * 2,
+		Timeout:         time.Second * 3,
+		Params:          "time_zone='Asia/Shanghai'",
+	}
+
+	_ = NewMySqlDb(mysqlConf, nil)
+
 }
