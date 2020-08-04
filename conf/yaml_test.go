@@ -140,4 +140,28 @@ func TestYamlFileResolver_Resolve(t *testing.T) {
 
 	})
 
+	t.Run("embedding", func(t *testing.T) {
+
+		f := &embedding{}
+		initStruct(f)
+
+		y := &yamlFileResolver{
+			File: "embedded.yaml",
+		}
+
+		y.Resolve(f)
+
+		e_ap := "xyz"
+
+		want := &embedding{}
+		want.A = "abc"
+		want.Ap = &e_ap
+
+		if !reflect.DeepEqual(f, want) {
+			t.Errorf("o = %v, want %v", f, want)
+		}
+
+	})
+
+
 }

@@ -164,4 +164,31 @@ func TestFlagResolver_Resolve(t *testing.T) {
 		}
 	})
 
+	t.Run("embedding", func(t *testing.T) {
+
+		f := &embedding{}
+		initStruct(f)
+
+		r := &flagResolver{
+			args: []string{
+				"-a=abc",
+				"-ap=xyz",
+			},
+		}
+
+		r.init(f)
+		r.Resolve(f)
+
+		e_ap := "xyz"
+
+		want := &embedding{}
+		want.A = "abc"
+		want.Ap = &e_ap
+
+		if !reflect.DeepEqual(f, want) {
+			t.Errorf("o = %v, want %v", f, want)
+		}
+
+	})
+
 }

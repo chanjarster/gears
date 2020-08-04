@@ -92,6 +92,20 @@ func Test_initStruct(t *testing.T) {
 		}
 	})
 
+	t.Run("embedding", func(t *testing.T) {
+		p := &embedding{}
+		initStruct(p)
+
+		want := &embedding{}
+		want.A = ""
+		want.Ap = new(string)
+		*want.Ap = ""
+
+		if !reflect.DeepEqual(p, want) {
+			t.Errorf("p = %v, want %v", p, want)
+		}
+	})
+
 }
 
 type fakeVisitor []string

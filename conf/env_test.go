@@ -56,6 +56,7 @@ func TestEnvResolver_Resolve(t *testing.T) {
 		}
 
 		setEnv(envs)
+		defer os.Clearenv()
 
 		r := &envResolver{}
 
@@ -119,6 +120,7 @@ func TestEnvResolver_Resolve(t *testing.T) {
 			"I=3",
 		}
 		setEnv(envs)
+		defer os.Clearenv()
 
 		r := &envResolver{}
 		r.init(f)
@@ -142,6 +144,7 @@ func TestEnvResolver_Resolve(t *testing.T) {
 			"I=abc",
 		}
 		setEnv(envs)
+		defer os.Clearenv()
 
 		r := &envResolver{}
 		r.init(f)
@@ -150,6 +153,34 @@ func TestEnvResolver_Resolve(t *testing.T) {
 		wantErr := `invalid value "abc" for env I:`
 		if !strings.HasPrefix(err.Error(), wantErr) {
 			t.Errorf("err prefix = %s, want %s", err, wantErr)
+		}
+
+	})
+
+	t.Run("embedding", func(t *testing.T) {
+
+		f := &embedding{}
+		initStruct(f)
+
+		envs := []string{
+			"A=abc",
+			"AP=xyz",
+		}
+		setEnv(envs)
+		defer os.Clearenv()
+
+		r := &envResolver{}
+		r.init(f)
+		r.Resolve(f)
+
+		e_ap := "xyz"
+
+		want := &embedding{}
+		want.A = "abc"
+		want.Ap = &e_ap
+
+		if !reflect.DeepEqual(f, want) {
+			t.Errorf("o = %v, want %v", f, want)
 		}
 
 	})

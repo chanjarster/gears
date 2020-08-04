@@ -91,3 +91,15 @@ type foo struct {
 		i int
 	}
 }
+
+//-----
+// embedded struct
+
+type Embedded struct {
+	A  string
+	Ap *string
+}
+
+type embedding struct {
+	Embedded `yaml:",inline"`
+}

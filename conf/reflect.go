@@ -98,7 +98,12 @@ func visitExportedFields(p interface{}, fn visitor) {
 	for i := 0; i < v.NumField(); i++ {
 		f := v.Type().Field(i)
 		fv := v.Field(i)
-		visitExportedFieldsPath(f, fv, f.Name, fn)
+		if f.Anonymous {
+			// f is embedded field
+			visitExportedFieldsPath(f, fv, "", fn)
+		} else {
+			visitExportedFieldsPath(f, fv, f.Name, fn)
+		}
 	}
 
 }
@@ -126,7 +131,17 @@ func visitExportedFieldsPath(f reflect.StructField, v reflect.Value, path string
 		for i := 0; i < v.NumField(); i++ {
 			fv := v.Field(i)
 			f := v.Type().Field(i)
-			visitExportedFieldsPath(f, fv, path+"."+f.Name, fn)
+			if f.Anonymous {
+				// f is embedded field
+				visitExportedFieldsPath(f, fv, path, fn)
+			} else {
+				if path == "" {
+					visitExportedFieldsPath(f, fv, f.Name, fn)
+				} else {
+					visitExportedFieldsPath(f, fv, path+"."+f.Name, fn)
+				}
+
+			}
 		}
 
 	default:
