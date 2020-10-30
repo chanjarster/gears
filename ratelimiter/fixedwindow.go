@@ -18,7 +18,7 @@
 package ratelimiter
 
 import (
-	gtime "github.com/chanjarster/gears/time"
+	gtime "github.com/chanjarster/gears/util/time"
 	"math"
 	"sync"
 	"time"

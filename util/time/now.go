@@ -15,5 +15,21 @@
  * limitations under the License.
  */
 
-// utils for time
-package time
+package timeutil
+
+import "time"
+
+// a function return "now"
+type NowFunc func() time.Time
+
+// A NowFunc implementation that return time.Now()
+func SysNow() time.Time {
+	return time.Now()
+}
+
+// return a function that returns "now" you provided, useful in testing
+func FixedNow(nowTime time.Time) NowFunc {
+	return func() time.Time {
+		return nowTime
+	}
+}
