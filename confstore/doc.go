@@ -16,4 +16,4 @@
  */
 
 // Tools to manipulate string config key-values
-package configstore
+package confstore

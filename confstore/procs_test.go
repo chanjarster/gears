@@ -1,4 +1,4 @@
-package configstore
+package confstore
 
 import (
 	rsautil "github.com/chanjarster/gears/util/rsa"

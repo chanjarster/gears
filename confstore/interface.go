@@ -1,4 +1,4 @@
-package configstore
+package confstore
 
 import (
 	"fmt"
@@ -74,14 +74,18 @@ type ValueProcessor interface {
 
 // config key persistence layer
 type Persister interface {
+	// load config key-values from underlying persistence layer into Interface
 	Load(s Interface)
+	// persist config key-value
 	Save(key, value string) error
+	// batch persist config key-values
 	BatchSave([]*KVStr) error
+	// delete config key from underlying persistence layer
 	Delete(key string) error
 }
 
 type LoadPolicy interface {
-	// load config key-values from Persister to Interface
+	// decide how to load config key-values from Persister into Interface
 	DoLoad(s Interface, p Persister)
 }
 
