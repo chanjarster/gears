@@ -118,5 +118,5 @@ func (K *KV) String() string {
 	return fmt.Sprintf("key: %s, value: %s", K.Key, K.Value)
 }
 
-var stdLogger = log.New(os.Stdout, "", log.Ldate|log.LstdFlags|log.Llongfile)
-var errLogger = log.New(os.Stderr, "", log.Ldate|log.LstdFlags|log.Llongfile)
+var stdLogger = log.New(os.Stdout, "", log.Ldate|log.LstdFlags|log.Lshortfile)
+var errLogger = log.New(os.Stderr, "", log.Ldate|log.LstdFlags|log.Lshortfile)
