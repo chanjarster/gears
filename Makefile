@@ -18,6 +18,10 @@ test:
 	go test ./...
 	go test -race ./...
 
+integration-test:
+	INTEGRATION_TEST=true go test ./...
+	INTEGRATION_TEST=true go test -race ./...
+
 benchmark: test
 	GOMAXPROCS=4 go test -race -bench=. -run=none -v -benchmem -benchtime=5s ./...
 
@@ -26,4 +30,4 @@ clean:
 	find . -name '*.out' -delete
 
 
-.PHONY: all test benchmark clean
+.PHONY: all test integration-test benchmark clean
