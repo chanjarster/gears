@@ -34,7 +34,7 @@ type defaultLoadPolicy struct {
 	minInterval time.Duration
 }
 
-func (t defaultLoadPolicy) DoLoad(s Interface, p Persister) error {
+func (t *defaultLoadPolicy) DoLoad(s Interface, p Persister) error {
 	t.loadLock.Lock()
 	defer t.loadLock.Unlock()
 
