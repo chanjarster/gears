@@ -11,10 +11,6 @@ type mockStore struct {
 	data map[string]string
 }
 
-func (m *mockStore) LoadFromPersister() error {
-	panic("implement me")
-}
-
 func (m *mockStore) RegisterKey(key string, defaultValue string, v ValueProcessor) error {
 	panic("implement me")
 }

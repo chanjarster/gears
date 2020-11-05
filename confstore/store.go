@@ -263,7 +263,3 @@ func (m *defaultImpl) ResetKey(key string) {
 		errLogger.Println("perister delete key error:", err)
 	}
 }
-
-func (m *defaultImpl) LoadFromPersister() error {
-	return m.persister.Load(m)
-}

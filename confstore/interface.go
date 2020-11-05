@@ -65,8 +65,6 @@ type Interface interface {
 	// reset key's current value to default value
 	ResetKey(key string)
 
-	// Force load config key-values from Persister
-	LoadFromPersister() error
 }
 
 // used to validate string value and convert string value to specific type
