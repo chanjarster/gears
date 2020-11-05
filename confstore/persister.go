@@ -2,7 +2,6 @@ package confstore
 
 import (
 	"github.com/go-redis/redis/v7"
-	"sync"
 )
 
 var (
@@ -12,7 +11,8 @@ var (
 // never persist config key-values
 type noopPersister struct{}
 
-func (n *noopPersister) Load(s Interface) {
+func (n *noopPersister) Load(s Interface) error {
+	return nil
 }
 
 func (n *noopPersister) Save(key, value string) error {
@@ -40,11 +40,11 @@ type redisPersister struct {
 	configRootKey string
 }
 
-func (r *redisPersister) Load(s Interface) {
+func (r *redisPersister) Load(s Interface) error {
 	result, err := r.redisClient.HGetAll(r.configRootKey).Result()
 	if err != nil {
 		errLogger.Println("load configs from redis failed:", err)
-		return
+		return err
 	}
 	for k, v := range result {
 		kvError := s.UpdateNoPersist(k, v)
@@ -53,6 +53,7 @@ func (r *redisPersister) Load(s Interface) {
 		}
 	}
 	stdLogger.Printf("%d config keys loaded from redis\n", len(result))
+	return nil
 }
 
 func (r *redisPersister) Save(key, value string) error {
@@ -78,20 +79,4 @@ func (r *redisPersister) BatchSave(kvStrs []*KVStr) error {
 func (r *redisPersister) Delete(key string) error {
 	_, err := r.redisClient.HDel(r.configRootKey, key).Result()
 	return err
-}
-
-func NewSimpleLoadPolicy() LoadPolicy {
-	return &simpleLoadPolicy{
-		loadLock: &sync.Mutex{},
-	}
-}
-
-type simpleLoadPolicy struct {
-	loadLock *sync.Mutex
-}
-
-func (d *simpleLoadPolicy) DoLoad(s Interface, p Persister) {
-	d.loadLock.Lock()
-	defer d.loadLock.Unlock()
-	p.Load(s)
 }

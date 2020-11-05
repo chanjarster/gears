@@ -20,6 +20,7 @@ type defaultImpl struct {
 	loadPolicy   LoadPolicy
 }
 
+
 func NewStore(persister Persister, policy LoadPolicy) Interface {
 	return &defaultImpl{
 		kvProcessorLock: &sync.RWMutex{},
@@ -261,4 +262,8 @@ func (m *defaultImpl) ResetKey(key string) {
 	if err != nil {
 		errLogger.Println("perister delete key error:", err)
 	}
+}
+
+func (m *defaultImpl) LoadFromPersister() error {
+	return m.persister.Load(m)
 }

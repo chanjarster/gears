@@ -6,13 +6,16 @@ import (
 )
 
 var (
-	NoopLoadPolicy LoadPolicy = &noopLoadPolicy{} // Never load config key-values from Persister to Interface
+	NoopLoadPolicy   LoadPolicy = &noopLoadPolicy{}     // Never load config key-values from Persister to Interface
+	SimpleLoadPolicy            = NewSimpleLoadPolicy() // Load config key-values from Persister immediately
 )
 
 // Never load config key-values from Persister to Interface
 type noopLoadPolicy struct{}
 
-func (n *noopLoadPolicy) DoLoad(s Interface, p Persister) {}
+func (n *noopLoadPolicy) DoLoad(s Interface, p Persister) error {
+	return nil
+}
 
 // Create a default load policy that load config key-values from Persister
 // only when last load timestamp is `minInterval` before current time.
@@ -31,20 +34,35 @@ type defaultLoadPolicy struct {
 	minInterval time.Duration
 }
 
-func (t defaultLoadPolicy) DoLoad(s Interface, p Persister) {
+func (t defaultLoadPolicy) DoLoad(s Interface, p Persister) error {
 	t.loadLock.Lock()
 	defer t.loadLock.Unlock()
 
 	if t.minInterval <= 0 {
-		p.Load(s)
-		return
+		return p.Load(s)
 	}
 
 	now := time.Now()
 	if now.Add(-t.minInterval).Before(t.lastLoadTs) {
-		return
+		return nil
 	}
 
-	p.Load(s)
+	err := p.Load(s)
+	if err != nil {
+		return err
+	}
 	t.lastLoadTs = time.Now()
+	return nil
+}
+
+func NewSimpleLoadPolicy() LoadPolicy {
+	return &simpleLoadPolicy{
+	}
+}
+
+type simpleLoadPolicy struct {
+}
+
+func (d *simpleLoadPolicy) DoLoad(s Interface, p Persister) error {
+	return p.Load(s)
 }

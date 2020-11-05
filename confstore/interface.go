@@ -64,6 +64,9 @@ type Interface interface {
 
 	// reset key's current value to default value
 	ResetKey(key string)
+
+	// Force load config key-values from Persister
+	LoadFromPersister() error
 }
 
 // used to validate string value and convert string value to specific type
@@ -75,7 +78,7 @@ type ValueProcessor interface {
 // config key persistence layer
 type Persister interface {
 	// load config key-values from underlying persistence layer into Interface
-	Load(s Interface)
+	Load(s Interface) error
 	// persist config key-value
 	Save(key, value string) error
 	// batch persist config key-values
@@ -86,7 +89,7 @@ type Persister interface {
 
 type LoadPolicy interface {
 	// decide how to load config key-values from Persister into Interface
-	DoLoad(s Interface, p Persister)
+	DoLoad(s Interface, p Persister) error
 }
 
 type KVStr struct {
