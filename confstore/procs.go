@@ -1,6 +1,7 @@
 package confstore
 
 import (
+	"crypto/rsa"
 	"fmt"
 	rsautil "github.com/chanjarster/gears/util/rsa"
 	"math"
@@ -35,7 +36,7 @@ func StringProcessor(minLength, maxLength int) *stringProcessor {
 }
 
 func (s *stringProcessor) Validate(value string) (ok bool, err string) {
-	ok =  len(value) >= s.minLength && len(value) <= s.maxLength
+	ok = len(value) >= s.minLength && len(value) <= s.maxLength
 	if !ok {
 		err = fmt.Sprintf("len(value) not >= %d or <= %d", s.minLength, s.maxLength)
 	}
@@ -132,7 +133,8 @@ func (u *urlProcessor) Validate(value string) (ok bool, err string) {
 
 func (u *urlProcessor) Convert(value string) interface{} {
 	if value == "" {
-		return nil
+		var null *url.URL
+		return null
 	}
 	v, _ := url.ParseRequestURI(value)
 	return v
@@ -191,7 +193,8 @@ func (r *rsaPrivateKeyPkcs1) Validate(value string) (ok bool, err string) {
 
 func (r *rsaPrivateKeyPkcs1) Convert(value string) interface{} {
 	if value == "" {
-		return nil
+		var null *rsa.PrivateKey
+		return null
 	}
 	v, _ := rsautil.ReadPrivateKey(value)
 	return v
@@ -212,7 +215,8 @@ func (r *rsaPublicKey) Validate(value string) (ok bool, err string) {
 
 func (r *rsaPublicKey) Convert(value string) interface{} {
 	if value == "" {
-		return nil
+		var null *rsa.PublicKey
+		return null
 	}
 	v, _ := rsautil.ReadPublicKey(value)
 	return v

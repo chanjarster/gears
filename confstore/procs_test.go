@@ -1,6 +1,7 @@
 package confstore
 
 import (
+	"crypto/rsa"
 	rsautil "github.com/chanjarster/gears/util/rsa"
 	"net/url"
 	"reflect"
@@ -378,6 +379,9 @@ func Test_urlProcessor_Validate(t *testing.T) {
 }
 
 func Test_urlProcessor_Convert(t *testing.T) {
+
+	var null *url.URL
+
 	type args struct {
 		value string
 	}
@@ -394,11 +398,14 @@ func Test_urlProcessor_Convert(t *testing.T) {
 			args: args{"http://abc.com"},
 			want: mustParseRequestURI("http://abc.com"),
 		},
+		{
+			want: null,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			u := &urlProcessor{}
-			if got := u.Convert(tt.args.value); !reflect.DeepEqual(got, tt.want) {
+			if got := u.Convert(tt.args.value).(*url.URL); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Convert() = %v, want %v", got, tt.want)
 			}
 		})
@@ -562,6 +569,9 @@ func Test_rsaPrivateKeyPkcs1_Validate(t *testing.T) {
 }
 
 func Test_rsaPrivateKeyPkcs1_Convert(t *testing.T) {
+
+	var null *rsa.PrivateKey
+
 	type args struct {
 		value string
 	}
@@ -575,11 +585,14 @@ func Test_rsaPrivateKeyPkcs1_Convert(t *testing.T) {
 			args: args{pk},
 			want: rsautil.MustReadPrivateKey(pk),
 		},
+		{
+			want: null,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			r := &rsaPrivateKeyPkcs1{}
-			if got := r.Convert(tt.args.value); !reflect.DeepEqual(got, tt.want) {
+			if got := r.Convert(tt.args.value).(*rsa.PrivateKey); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Convert() = %v, want %v", got, tt.want)
 			}
 		})
@@ -623,6 +636,8 @@ func Test_rsaPublicKey_Validate(t *testing.T) {
 }
 
 func Test_rsaPublicKey_Convert(t *testing.T) {
+	var null *rsa.PublicKey
+
 	type args struct {
 		value string
 	}
@@ -636,11 +651,14 @@ func Test_rsaPublicKey_Convert(t *testing.T) {
 			args: args{pk},
 			want: rsautil.MustReadPublicKey(pk),
 		},
+		{
+			want: null,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			r := &rsaPublicKey{}
-			if got := r.Convert(tt.args.value); !reflect.DeepEqual(got, tt.want) {
+			if got := r.Convert(tt.args.value).(*rsa.PublicKey); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Convert() = %v, want %v", got, tt.want)
 			}
 		})
