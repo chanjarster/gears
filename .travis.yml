@@ -15,6 +15,9 @@
 
 language: go
 
+services:
+  - redis-server
+
 dist: bionic
 
 os:
@@ -53,11 +56,11 @@ jobs:
     - go get golang.org/x/tools/cmd/cover
     - go get github.com/mattn/goveralls
     # run tests on a standard platform
-    - go test -v -covermode=count -coverprofile=coverage.out ./...
+    - INTEGRATION_TEST=true go test -v -covermode=count -coverprofile=coverage.out ./...
     # collect coverage
     - $HOME/gopath/bin/goveralls -coverprofile=coverage.out -service=travis-pro -repotoken $COVERALLS_TOKEN
     # run tests with the race detector as well
-    - go test -race -v ./...
+    - INTEGRATION_TEST=true go test -race -v ./...
 
 env:
   global:
