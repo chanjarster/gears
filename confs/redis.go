@@ -19,6 +19,7 @@ package confs
 
 import (
 	"fmt"
+	"github.com/chanjarster/gears/simplelog"
 	"github.com/go-redis/redis/v7"
 	"strconv"
 )
@@ -49,10 +50,10 @@ func NewRedisClient(rc *RedisConf, customizer RedisOptionCustomizer) *redis.Clie
 	client := redis.NewClient(redisOpts)
 	_, err := client.Ping().Result()
 	if err != nil {
-		errLogger.Fatal("Redis connection error: ", err)
+		simplelog.ErrLogger.Fatal("Redis connection error: ", err)
 	}
 
-	stdLogger.Printf("Connected to Redis: %s:%d\n", rc.Host, rc.Port)
+	simplelog.StdLogger.Printf("Connected to Redis: %s:%d\n", rc.Host, rc.Port)
 	return client
 
 }

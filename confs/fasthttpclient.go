@@ -21,6 +21,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
+	"github.com/chanjarster/gears/simplelog"
 	"github.com/valyala/fasthttp"
 	"io/ioutil"
 	"strings"
@@ -126,6 +127,6 @@ func appendCertPool(certPool *x509.CertPool, file string) {
 		panic(err)
 	}
 	if !certPool.AppendCertsFromPEM(cert) {
-		errLogger.Fatalf("load cert %s failed\n", file)
+		simplelog.ErrLogger.Fatalf("load cert %s failed\n", file)
 	}
 }

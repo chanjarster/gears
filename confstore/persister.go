@@ -1,6 +1,7 @@
 package confstore
 
 import (
+	"github.com/chanjarster/gears/simplelog"
 	"github.com/go-redis/redis/v7"
 )
 
@@ -43,16 +44,16 @@ type redisPersister struct {
 func (r *redisPersister) Load(s Interface) error {
 	result, err := r.redisClient.HGetAll(r.configRootKey).Result()
 	if err != nil {
-		errLogger.Println("load configs from redis failed:", err)
+		simplelog.ErrLogger.Println("load configs from redis failed:", err)
 		return err
 	}
 	for k, v := range result {
 		kvError := s.UpdateNoPersist(k, v)
 		if kvError != nil {
-			stdLogger.Printf("warning: load key[%s] value[%s] error: %s\n", kvError.Key, kvError.Value, kvError.Error)
+			simplelog.StdLogger.Printf("warning: load key[%s] value[%s] error: %s\n", kvError.Key, kvError.Value, kvError.Error)
 		}
 	}
-	stdLogger.Printf("%d config keys loaded from redis\n", len(result))
+	simplelog.StdLogger.Printf("%d config keys loaded from redis\n", len(result))
 	return nil
 }
 

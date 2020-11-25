@@ -2,8 +2,6 @@ package confstore
 
 import (
 	"fmt"
-	"log"
-	"os"
 )
 
 // TODO write examples
@@ -64,7 +62,6 @@ type Interface interface {
 
 	// reset key's current value to default value
 	ResetKey(key string)
-
 }
 
 // used to validate string value and convert string value to specific type
@@ -117,6 +114,3 @@ type KV struct {
 func (K *KV) String() string {
 	return fmt.Sprintf("key: %s, value: %s", K.Key, K.Value)
 }
-
-var stdLogger = log.New(os.Stdout, "", log.Ldate|log.LstdFlags|log.Lshortfile)
-var errLogger = log.New(os.Stderr, "", log.Ldate|log.LstdFlags|log.Lshortfile)

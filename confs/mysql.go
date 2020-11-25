@@ -20,6 +20,7 @@ package confs
 import (
 	"database/sql"
 	"fmt"
+	"github.com/chanjarster/gears/simplelog"
 	"github.com/go-sql-driver/mysql"
 	"net/url"
 	"strings"
@@ -96,7 +97,7 @@ func NewMySqlDb(conf *MysqlConf, customizer MysqlConfigCustomizer) *sql.DB {
 	dsn := mc.FormatDSN()
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
-		errLogger.Fatal(err)
+		simplelog.ErrLogger.Fatal(err)
 		panic(err)
 	}
 	db.SetMaxOpenConns(conf.MaxOpenConns)
@@ -105,11 +106,11 @@ func NewMySqlDb(conf *MysqlConf, customizer MysqlConfigCustomizer) *sql.DB {
 
 	err = db.Ping()
 	if err != nil {
-		errLogger.Fatal("MySQL connection error: ", err)
+		simplelog.ErrLogger.Fatal("MySQL connection error: ", err)
 		panic(err)
 	}
 
-	stdLogger.Printf("Connected to MySQL: %s:%d", conf.Host, conf.Port)
+	simplelog.StdLogger.Printf("Connected to MySQL: %s:%d", conf.Host, conf.Port)
 	return db
 }
 
@@ -127,7 +128,7 @@ func prepareMySqlNativeConfig(conf *MysqlConf, customizer MysqlConfigCustomizer)
 	mc.ParseTime = conf.ParseTime
 	if conf.Loc != "" {
 		if loc, err := time.LoadLocation(conf.Loc); err != nil {
-			errLogger.Fatal(err)
+			simplelog.ErrLogger.Fatal(err)
 			panic(err)
 		} else {
 			mc.Loc = loc

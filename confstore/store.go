@@ -3,6 +3,7 @@ package confstore
 import (
 	"errors"
 	"fmt"
+	"github.com/chanjarster/gears/simplelog"
 	"github.com/modern-go/reflect2"
 	"sync"
 )
@@ -19,7 +20,6 @@ type defaultImpl struct {
 	persister    Persister
 	loadPolicy   LoadPolicy
 }
-
 
 func NewStore(persister Persister, policy LoadPolicy) Interface {
 	return &defaultImpl{
@@ -89,7 +89,7 @@ func (m *defaultImpl) DeregisterKey(key string) {
 
 	err := m.persister.Delete(key)
 	if err != nil {
-		errLogger.Println("perister delete key error:", err)
+		simplelog.ErrLogger.Println("perister delete key error:", err)
 	}
 
 }
@@ -128,7 +128,7 @@ func (m *defaultImpl) Update(key string, value string) *KVError {
 	if err != nil {
 		err2 := m.persister.Save(key, value)
 		if err2 != nil {
-			errLogger.Printf("error happened when persist key[%s] value[%s]\n", key, value)
+			simplelog.ErrLogger.Printf("error happened when persist key[%s] value[%s]\n", key, value)
 			return nil
 		}
 	}
@@ -260,6 +260,6 @@ func (m *defaultImpl) ResetKey(key string) {
 	delete(m.kvStr, key)
 	err := m.persister.Delete(key)
 	if err != nil {
-		errLogger.Println("perister delete key error:", err)
+		simplelog.ErrLogger.Println("perister delete key error:", err)
 	}
 }
