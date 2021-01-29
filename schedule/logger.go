@@ -5,5 +5,5 @@ import (
 	"os"
 )
 
-var stdLogger = log.New(os.Stdout, "scheduler: ", log.Ldate|log.LstdFlags|log.Lmsgprefix)
-var errLogger = log.New(os.Stderr, "scheduler: ", log.Ldate|log.LstdFlags|log.Lmsgprefix)
+var stdLogger = log.New(os.Stdout, "", log.Ldate|log.LstdFlags|log.Llongfile)
+var errLogger = log.New(os.Stderr, "", log.Ldate|log.LstdFlags|log.Llongfile)
