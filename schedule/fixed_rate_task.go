@@ -19,7 +19,6 @@ package schedule
 
 import (
 	"fmt"
-	"github.com/chanjarster/gears/simplelog"
 	"strings"
 	"sync"
 	"time"
@@ -48,7 +47,7 @@ func NewFixedRateTask(name string, job JobFunc, interval time.Duration, timeout 
 		panic(fmt.Sprintf("task[%s] interval must > 0", name))
 	}
 	if interval <= timeout {
-		simplelog.StdLogger.Printf("task[%s] interval <= timeout, jobs may be overlapped", name)
+		stdLogger.Printf("task[%s] interval <= timeout, jobs may be overlapped", name)
 	}
 	if job == nil {
 		panic(fmt.Sprintf("task[%s] job must be not nil", name))
@@ -89,7 +88,7 @@ func (t *FixedRateTask) Start() error {
 	go t.startConsuming()
 	go t.startProviding()
 
-	simplelog.StdLogger.Printf("task[%s] started", t.name)
+	stdLogger.Printf("task[%s] started", t.name)
 
 	return nil
 }
@@ -110,7 +109,7 @@ func (t *FixedRateTask) Stop() error {
 	}
 
 	t.ticker.Stop()
-	simplelog.StdLogger.Printf("task[%s] stop signal sent", t.name)
+	stdLogger.Printf("task[%s] stop signal sent", t.name)
 	return nil
 }
 
@@ -137,7 +136,6 @@ func (t *FixedRateTask) startProviding() {
 		}
 	}
 }
-
 
 func (t *FixedRateTask) startConsuming() {
 	for {

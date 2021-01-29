@@ -232,7 +232,6 @@ func TestFixedDelayTask_Stop(t *testing.T) {
 
 }
 
-
 func TestFixedDelayTask_Start_scheduled_several_times(t *testing.T) {
 	r := &countRecord{
 		lock: &sync.Mutex{},
@@ -255,7 +254,10 @@ func TestFixedDelayTask_Start_scheduled_several_times(t *testing.T) {
 }
 
 func TestFixedDelayTask_Start_cancel_timeout_job(t *testing.T) {
-	cancelCount := 0
+	r := &countRecord{
+		lock: &sync.Mutex{},
+	}
+
 	sleepFunc := func(cancel <-chan struct{}) error {
 		fin := make(chan struct{})
 		go func() {
@@ -265,7 +267,7 @@ func TestFixedDelayTask_Start_cancel_timeout_job(t *testing.T) {
 		select {
 		case <-fin:
 		case <-cancel:
-			cancelCount++
+			r.AddCount()
 		}
 		return nil
 	}
@@ -274,8 +276,8 @@ func TestFixedDelayTask_Start_cancel_timeout_job(t *testing.T) {
 	time.Sleep(time.Millisecond * 50)
 	task.Stop()
 	time.Sleep(time.Millisecond * 50)
-	if cancelCount < 2 {
-		t.Errorf("timeout job is canceled %v times, want >= 2", cancelCount)
+	if r.GetCount() < 2 {
+		t.Errorf("timeout job is canceled %v times, want >= 2", r.GetCount())
 	}
 }
 
@@ -285,7 +287,6 @@ func TestFixedDelayTask_Start_never_overlap(t *testing.T) {
 		overlapped:   false,
 		runningCount: 0,
 	}
-
 
 	sleepFunc := func(cancel <-chan struct{}) error {
 		if r.GetRunningCount() != 0 {

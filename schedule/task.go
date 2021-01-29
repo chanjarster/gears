@@ -21,7 +21,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/chanjarster/gears/simplelog"
 	"time"
 )
 
@@ -96,7 +95,7 @@ func (t *taskCommon) markStopSendSignal() error {
 }
 
 func (t *taskCommon) runJob(nextNo int64) {
-	simplelog.StdLogger.Printf("task[%s] job[#%v] start\n", t.name, nextNo)
+	stdLogger.Printf("task[%s] job[#%v] start\n", t.name, nextNo)
 	timeoutCtx, cancel := context.WithTimeout(context.Background(), t.timeout)
 	defer cancel()
 
@@ -113,15 +112,15 @@ func (t *taskCommon) runJob(nextNo int64) {
 		close(fin)
 
 		if err != nil {
-			simplelog.ErrLogger.Printf("task[%s] job[#%v] error: %v\n", t.name, nextNo, err)
+			errLogger.Printf("task[%s] job[#%v] error: %v\n", t.name, nextNo, err)
 		}
 
 		if ctxErr := timeoutCtx.Err(); ctxErr == context.Canceled {
-			simplelog.StdLogger.Printf("task[%s] job[#%v] canceled by stop signal, time elapse %v\n", t.name, nextNo, elapse)
+			stdLogger.Printf("task[%s] job[#%v] canceled by stop signal, time elapse %v\n", t.name, nextNo, elapse)
 		} else if ctxErr == context.DeadlineExceeded {
-			simplelog.StdLogger.Printf("task[%s] job[#%v] canceled due to timeout(%v), time elapse %v\n", t.name, nextNo, t.timeout, elapse)
+			stdLogger.Printf("task[%s] job[#%v] canceled due to timeout(%v), time elapse %v\n", t.name, nextNo, t.timeout, elapse)
 		} else {
-			simplelog.StdLogger.Printf("task[%s] job[#%v] finished, time elapse %v\n", t.name, nextNo, elapse)
+			stdLogger.Printf("task[%s] job[#%v] finished, time elapse %v\n", t.name, nextNo, elapse)
 		}
 
 	}()
