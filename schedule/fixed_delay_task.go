@@ -19,6 +19,7 @@ package schedule
 
 import (
 	"fmt"
+	"github.com/chanjarster/gears/simplelog"
 	"strings"
 	"sync"
 	"time"
@@ -85,7 +86,7 @@ func (t *FixedDelayTask) Start() error {
 		return nil
 	}
 
-	stdLogger.Printf("task[%s] started", t.name)
+	simplelog.StdLogger.Printf("task[%s] started", t.name)
 
 	return nil
 }
@@ -132,7 +133,7 @@ func (t *FixedDelayTask) Stop() error {
 	if err != nil {
 		return err
 	}
-	stdLogger.Printf("task[%s] stop signal sent", t.name)
+	simplelog.StdLogger.Printf("task[%s] stop signal sent", t.name)
 	return nil
 }
 
