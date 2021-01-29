@@ -15,24 +15,22 @@
  * limitations under the License.
  */
 
-package concurrent
+package schedule
 
-func Example_lockSemaphore() {
-	sema := NewLockSemaphore(100) // new a semaphore with 100 permits
-	sema.Acquire()                // will be block if no permits available
-	defer sema.Release()          // return permit
-
-	if sema.TryAcquire() { // will return false if no permits available
-		defer sema.Release() // return permit
+func Example_jobFunc() {
+	someJob := func(cancel <-chan struct{}) error {
+		fin := make(chan struct{})
+		go func() {
+			// do some work
+			close(fin)
+		}()
+		select {
+		case <-fin:
+			// job finished normally
+		case <-cancel:
+			// job canceled, do some cancelling work
+		}
+		return nil
 	}
-}
-
-func Example_chanSemaphore() {
-	sema := NewChanSemaphore(100) // new a semaphore with 100 permits
-	sema.Acquire()                // will be block if no permits available
-	defer sema.Release()          // return permit
-
-	if sema.TryAcquire() { // will return false if no permits available
-		defer sema.Release() // return permit
-	}
+	someJob(nil)
 }

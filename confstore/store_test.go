@@ -1,6 +1,7 @@
 package confstore
 
 import (
+	"github.com/chanjarster/gears/testutil"
 	"reflect"
 	"testing"
 )
@@ -337,9 +338,9 @@ func Test_memStore_MustGetValue(t *testing.T) {
 				}
 			}
 			if tt.wantPanic {
-				shouldPanic(t, f)
+				testutil.ShouldPanic(t,"MustGetValue()", f)
 			} else {
-				shouldNotPanic(t, f)
+				testutil.ShouldNotPanic(t, "MustGetValue()", f)
 			}
 
 		})
@@ -437,9 +438,9 @@ func Test_memStore_MustGetValueString(t *testing.T) {
 				}
 			}
 			if tt.wantPanic {
-				shouldPanic(t, f)
+				testutil.ShouldPanic(t, "MustGetValueString()", f)
 			} else {
-				shouldNotPanic(t, f)
+				testutil.ShouldNotPanic(t, "MustGetValueString()", f)
 			}
 
 		})
@@ -498,17 +499,3 @@ func Test_memStore_ResetKey(t *testing.T) {
 
 }
 
-func shouldPanic(t *testing.T, f func()) {
-	defer func() { recover() }()
-	f()
-	t.Errorf("did not panicked")
-}
-
-func shouldNotPanic(t *testing.T, f func()) {
-	defer func() {
-		if r := recover(); r != nil {
-			t.Errorf("panicked")
-		}
-	}()
-	f()
-}
