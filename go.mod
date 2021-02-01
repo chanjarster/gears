@@ -3,6 +3,7 @@ module github.com/chanjarster/gears
 go 1.14
 
 require (
+	github.com/elastic/go-elasticsearch/v7 v7.10.0
 	github.com/go-redis/redis/v7 v7.2.0
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect

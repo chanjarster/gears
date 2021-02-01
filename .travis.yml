@@ -17,6 +17,10 @@ language: go
 
 services:
   - redis-server
+  - elasticsearch
+
+before_script:
+  - sleep 10
 
 dist: bionic
 

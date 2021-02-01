@@ -244,7 +244,7 @@ func TestFixedDelayTask_Start_scheduled_several_times(t *testing.T) {
 	task := NewFixedDelayTask("foo", execCountFunc, time.Millisecond*2, time.Millisecond).(*FixedDelayTask)
 	task.Start()
 
-	time.Sleep(time.Millisecond * 5)
+	time.Sleep(time.Millisecond * 10)
 	task.Stop()
 
 	if r.GetCount() < 2 {
