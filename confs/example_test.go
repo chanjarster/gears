@@ -19,8 +19,11 @@ package confs
 
 import (
 	"github.com/chanjarster/gears/conf"
+	"github.com/gin-contrib/pprof"
+	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v7"
 	"github.com/go-sql-driver/mysql"
+	routing "github.com/qiangxue/fasthttp-routing"
 	"github.com/valyala/fasthttp"
 )
 
@@ -53,4 +56,27 @@ func ExampleNewFastHttpClient() {
 	}
 	hc := NewFastHttpClient(hcConf, customizer)
 	hc.Get(make([]byte, 0), "https://baidu.com")
+}
+
+func ExampleNewGinPprofBasicAuthFilter() {
+	pprofConf := &PprofConf{
+		Username:             "abc",
+		Password:             "xyz",
+		BlockProfileRate:     1,
+		MutexProfileFraction: 1,
+	}
+	r := gin.Default()
+	pprofGroup := r.Group("debug/pprof", NewGinPprofBasicAuthFilter(pprofConf))
+	pprof.RouteRegister(pprofGroup, "")
+}
+
+func ExampleNewFasthttpRoutingPprofHandler() {
+	pprofConf := &PprofConf{
+		Username:             "abc",
+		Password:             "xyz",
+		BlockProfileRate:     1,
+		MutexProfileFraction: 1,
+	}
+	router := routing.New()
+	router.Any("/debug/pprof/*", NewFasthttpRoutingPprofHandler(pprofConf))
 }
