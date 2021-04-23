@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strings"
+	"time"
 )
 
 type EsConf struct {
@@ -30,12 +31,14 @@ func NewEsClient(conf *EsConf, customizer EsConfigCustomizer) *elasticsearch.Cli
 		Addresses: strings.Split(conf.Addrs, ","),
 		Username:  conf.Username,
 		Password:  conf.Password,
-		Transport: &http.Transport{
-			MaxConnsPerHost:     conf.MaxConnsPerHost,
-			MaxIdleConnsPerHost: conf.MaxIdleConnsPerHost,
-		},
 	}
 
+	transport := http.DefaultTransport.(*http.Transport).Clone()
+	transport.MaxIdleConnsPerHost = conf.MaxConnsPerHost
+	transport.MaxIdleConns = conf.MaxIdleConnsPerHost
+	transport.ResponseHeaderTimeout = time.Second * 60
+
+	esConf.Transport = transport
 	if customizer != nil {
 		customizer(esConf)
 	}
