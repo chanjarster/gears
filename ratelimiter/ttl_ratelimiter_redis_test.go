@@ -264,3 +264,75 @@ func Test_redisTtlRateLimiter_ShouldBlock2(t *testing.T) {
 	}
 
 }
+
+func Test_redisTtlRateLimiter_IsBlocked(t *testing.T) {
+
+	val, hit := os.LookupEnv("INTEGRATION_TEST")
+	if !hit || val != "true" {
+		t.Skip("skip integration test")
+	}
+
+	redisClient := confs.NewRedisClient(&confs.RedisConf{
+		Host:     "localhost",
+		Port:     6379,
+		Password: "",
+		Pool:     10,
+		MinIdle:  1,
+	}, nil)
+	redisClient.FlushAll()
+	defer redisClient.Close()
+
+	LoadScript(redisClient)
+	params := NewFixedTtlRateLimiterParams(1, 1, 1)
+	r := NewRedisTtlRateLimiter(redisClient, params)
+
+	r.ShouldBlock("bar", "bar msg")
+	r.ShouldBlock2("bar", "bar", "bar msg")
+
+	type args struct {
+		blockKey string
+	}
+	tests := []struct {
+		name string
+		args args
+		want *Result
+	}{
+		{
+			args: args{"bar"},
+			want: &Result{
+				Block:     true,
+				Triggered: false,
+				Ttl:       params.GetTimeoutSeconds(),
+				Msg:       "bar msg",
+			},
+		},
+		{
+			args: args{"foo"},
+			want: &Result{
+				Block:     false,
+				Triggered: false,
+				Ttl:       0,
+				Msg:       "",
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			got := r.IsBlocked(tt.args.blockKey)
+			if got.Block != tt.want.Block {
+				t.Errorf("IsBlocked() gotBlock = %v, want %v", got.Block, tt.want.Block)
+			}
+			if got.Triggered != tt.want.Triggered {
+				t.Errorf("IsBlocked() gotTriggered = %v, want %v", got.Triggered, tt.want.Triggered)
+			}
+			if got.Ttl != tt.want.Ttl {
+				t.Errorf("IsBlocked() gotTtl = %v, want %v", got.Ttl, tt.want.Ttl)
+			}
+			if got.Msg != tt.want.Msg {
+				t.Errorf("IsBlocked() gotMsg = %v, want %v", got.Msg, tt.want.Msg)
+			}
+		})
+	}
+
+}

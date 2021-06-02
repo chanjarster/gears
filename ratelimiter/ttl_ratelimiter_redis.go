@@ -49,7 +49,7 @@ const (
 	suffix = ":bl"
 
 	// return block, triggered, ttl, msg
-	script = `local key = KEYS[1]
+	script1 = `local key = KEYS[1]
 local keyb = KEYS[2]
 local cap = tonumber(ARGV[1])
 local win = tonumber(ARGV[2])
@@ -106,10 +106,24 @@ end
 redis.call('SET', keyb, msg, 'EX', exp, 'NX')
 return {1, 1, exp, msg}
 `
+
+	// return block, triggered, ttl, msg
+	script2 = `local keyb = KEYS[1]
+
+if redis.call('EXISTS', keyb) == 1
+then
+  local ttl = redis.call('TTL', keyb)
+  local omsg = redis.call('GET', keyb)
+  return {1, 0, ttl, omsg}
+end
+
+return {0, 0, 0, ''}
+`
 )
 
 var (
 	scriptSha1 = ""
+	scriptSha2 = ""
 )
 
 func NewRedisTtlRateLimiter(redisClient *redis.Client, params TtlRateLimiterParams) TtlRateLimiter {
@@ -161,7 +175,7 @@ func (r *redisTtlRateLimiter) ShouldBlock2(key string, blockKey string, msg stri
 	).Result()
 
 	if err != nil {
-		simplelog.ErrLogger.Println("eval script ", scriptSha1, "error", err)
+		simplelog.ErrLogger.Println("eval script1 ", scriptSha1, "error", err)
 		return result
 	}
 
@@ -172,6 +186,29 @@ func (r *redisTtlRateLimiter) ShouldBlock2(key string, blockKey string, msg stri
 	result.Msg = arr[3].(string)
 	return result
 
+}
+
+func (r *redisTtlRateLimiter) IsBlocked(blockKey string) *Result {
+	result := &Result{}
+	blockKey = blockKey + suffix
+
+	//local keyb = KEYS[1]
+	raw, err := r.redisClient.EvalSha(
+		scriptSha2,
+		[]string{blockKey},
+	).Result()
+
+	if err != nil {
+		simplelog.ErrLogger.Println("eval script2 ", scriptSha1, "error", err)
+		return result
+	}
+
+	arr := raw.([]interface{})
+	result.Block = arr[0].(int64) == 1
+	result.Triggered = arr[1].(int64) == 1
+	result.Ttl = int(arr[2].(int64))
+	result.Msg = arr[3].(string)
+	return result
 }
 
 func (r *redisTtlRateLimiter) GetWindowSizeSeconds() int {
@@ -187,9 +224,18 @@ func (r *redisTtlRateLimiter) GetCapacity() int {
 }
 
 func LoadScript(redisClient *redis.Client) {
-	sha1, err := redisClient.ScriptLoad(script).Result()
+	loadScript(redisClient, script1, func(scriptSha string) {
+		scriptSha1 = scriptSha
+	})
+	loadScript(redisClient, script2, func(scriptSha string) {
+		scriptSha2 = scriptSha
+	})
+}
+
+func loadScript(redisClient *redis.Client, script string, callback func(scriptSha string)) {
+	sha, err := redisClient.ScriptLoad(script).Result()
 	if err != nil {
 		panic(err)
 	}
-	scriptSha1 = sha1
+	callback(sha)
 }

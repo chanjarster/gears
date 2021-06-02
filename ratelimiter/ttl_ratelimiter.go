@@ -37,6 +37,9 @@ type TtlRateLimiter interface {
 	// same as ShouldBlock2(key, key, msg)
 	ShouldBlock(key string, msg string) *Result
 
+	// Check `blockKey` exists
+	IsBlocked(blockKey string) *Result
+
 	// When the request rate of `key` exceeds the limit, blocking will be triggered(record on `blockKey`)
 	// and last for `timeout` seconds(ttl).
 	// After `timeout` seconds, `blockKey` will be released and request `key` can be passed again.
