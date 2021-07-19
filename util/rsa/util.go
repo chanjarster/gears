@@ -80,6 +80,35 @@ func ReadPublicKeyBytes(pemBytes []byte) (*rsa.PublicKey, error) {
 	return pub.(*rsa.PublicKey), nil
 }
 
+func ReadX509Certificate(pem string) (*x509.Certificate, error) {
+	pem = normalizePem(pem, "CERTIFICATE")
+	pemByte := []byte(pem)
+	return ReadX509CertificateBytes(pemByte)
+}
+
+func MustReadX509CertificateBytes(pemBytes []byte) *x509.Certificate {
+	c, err := ReadX509CertificateBytes(pemBytes)
+	if err != nil {
+		panic(err)
+	}
+	return c
+}
+
+func ReadX509CertificateBytes(pemBytes []byte) (*x509.Certificate, error) {
+	block, _ := pem.Decode(pemBytes)
+	if block == nil {
+		return nil, errors.New("invalid CERTIFICATE")
+	}
+	if block.Type != "CERTIFICATE" {
+		return nil, errors.New("expected type: X509 CERTIFICATE, got: " + block.Type)
+	}
+	cert, err := x509.ParseCertificate(block.Bytes)
+	if err != nil {
+		return nil, err
+	}
+	return cert, nil
+}
+
 func normalizePem(pemStr string, typ string) string {
 	if strings.Index(pemStr, "-----BEGIN") == -1 || strings.Index(pemStr, "-----END") == -1 {
 		pemStr = fmt.Sprintf("-----BEGIN %s-----\n%s\n-----END %s-----", typ, pemStr, typ)
