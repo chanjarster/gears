@@ -30,6 +30,7 @@ func Test_prepareRedisNativeConfig(t *testing.T) {
 		Password: "bar",
 		Pool:     1,
 		MinIdle:  2,
+		Db:       3,
 	}
 	customizer := func(ropt *redis.Options) {
 		ropt.MaxRetries = 2
@@ -49,5 +50,8 @@ func Test_prepareRedisNativeConfig(t *testing.T) {
 	}
 	if got, want := redisOpts.MaxRetries, 2; got != want {
 		t.Errorf("redisOpts.MaxRetries = %v, want %v", got, want)
+	}
+	if got, want := redisOpts.DB, 3; got != want {
+		t.Errorf("redisOpts.DB = %v, want %v", got, want)
 	}
 }

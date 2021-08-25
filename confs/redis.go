@@ -32,6 +32,7 @@ import (
 //  | PASSWORD      | -password |                          |
 //  | POOL          | -pool     | Connection pool size     |
 //  | MIN_IDLE      | -min-idle | Minimal idle connections |
+//  | DB            | -db       | Database to be selected after connecting to the server. |
 // Note: if RedisConf is nested in another struct, add corresponding prefix.
 type RedisConf struct {
 	Host     string // Redis host
@@ -39,6 +40,7 @@ type RedisConf struct {
 	Password string // Redis password
 	Pool     int    // Redis pool size
 	MinIdle  int    // Redis min idle
+	Db       int    // Database to be selected after connecting to the server. See https://redis.io/commands/select
 }
 
 type RedisOptionCustomizer func(ropt *redis.Options)
@@ -69,6 +71,7 @@ func prepareRedisNativeConfig(rc *RedisConf, customizer RedisOptionCustomizer) *
 		Password:     rc.Password,
 		PoolSize:     rc.Pool,
 		MinIdleConns: rc.MinIdle,
+		DB:           rc.Db,
 	}
 	if customizer != nil {
 		customizer(redisOpts)
