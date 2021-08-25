@@ -73,6 +73,7 @@ local size = redis.call('LLEN', key)
 if size < cap
 then
   redis.call('RPUSH', key, now)
+  redis.call('EXPIRE', key, exp * 2)
   return {0, 0, 0, ''}
 end
 
@@ -90,7 +91,7 @@ local list = redis.call('LRANGE', key, 0, 0)
 if table.getn(list) == 0
 then
   redis.call('RPUSH', key, now)
-  redis.call('EXPIRE', key, 3600)
+  redis.call('EXPIRE', key, exp * 2)
   return {0, 0, 0, ''}
 end
 
@@ -99,7 +100,7 @@ if now - oldest > win
 then
   redis.call('RPUSH', key, now)
   redis.call('LPOP', key)
-  redis.call('EXPIRE', key, 3600)
+  redis.call('EXPIRE', key, exp * 2)
   return {0, 0, 0, ''}
 end
 
@@ -199,7 +200,7 @@ func (r *redisTtlRateLimiter) IsBlocked(blockKey string) *Result {
 	).Result()
 
 	if err != nil {
-		simplelog.ErrLogger.Println("eval script2 ", scriptSha1, "error", err)
+		simplelog.ErrLogger.Println("eval script2 ", scriptSha2, "error", err)
 		return result
 	}
 
