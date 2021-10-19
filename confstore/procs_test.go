@@ -664,3 +664,56 @@ func Test_rsaPublicKey_Convert(t *testing.T) {
 		})
 	}
 }
+
+func Test_enumProcessor_Validate(t *testing.T) {
+	type fields struct {
+		enums []string
+	}
+	type args struct {
+		value string
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantOk  bool
+		wantErr string
+	}{
+		{
+			fields:  fields{[]string{"foo", "bar"}},
+			args:    args{""},
+			wantOk:  false,
+			wantErr: "only allowed value: [foo,bar]",
+		},
+		{
+			fields:  fields{[]string{"foo", "bar"}},
+			args:    args{"loo"},
+			wantOk:  false,
+			wantErr: "only allowed value: [foo,bar]",
+		},
+		{
+			fields:  fields{[]string{"foo", "bar"}},
+			args:    args{"foo"},
+			wantOk:  true,
+			wantErr: "",
+		},
+		{
+			fields:  fields{[]string{"foo", "bar"}},
+			args:    args{"bar"},
+			wantOk:  true,
+			wantErr: "",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := EnumProcessor(tt.fields.enums)
+			gotOk, gotErr := s.Validate(tt.args.value)
+			if gotOk != tt.wantOk {
+				t.Errorf("Validate() gotOk = %v, want %v", gotOk, tt.wantOk)
+			}
+			if gotErr != tt.wantErr {
+				t.Errorf("Validate() gotErr = %v, want %v", gotErr, tt.wantErr)
+			}
+		})
+	}
+}

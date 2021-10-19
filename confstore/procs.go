@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -221,3 +222,34 @@ func (r *rsaPublicKey) Convert(value string) interface{} {
 	v, _ := rsautil.ReadPublicKey(value)
 	return v
 }
+
+type enumProcessor struct {
+	enums map[string]bool
+}
+
+func EnumProcessor(enums []string) *enumProcessor {
+	m := make(map[string]bool, len(enums))
+	for _, enum := range enums {
+		m[enum] = true
+	}
+	return &enumProcessor{enums: m}
+}
+
+func (e *enumProcessor) Validate(value string) (ok bool, err string) {
+	_, ok = e.enums[value]
+	if !ok {
+		a := make([]string, 0, len(e.enums))
+		for enum, _ := range e.enums {
+			a = append(a, enum)
+		}
+
+		err = fmt.Sprintf("only allowed value: [%v]", strings.Join(a, ","))
+	}
+	return ok, err
+}
+
+func (e *enumProcessor) Convert(value string) interface{} {
+	return value
+}
+
+
