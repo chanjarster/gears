@@ -20,6 +20,7 @@ package ratelimiter
 import (
 	"github.com/chanjarster/gears/simplelog"
 	"github.com/go-redis/redis/v7"
+	"strings"
 	"time"
 )
 
@@ -135,9 +136,22 @@ func NewRedisTtlRateLimiter(redisClient *redis.Client, params TtlRateLimiterPara
 	return r
 }
 
+// NewRedisTtlRateLimiterCluster create a redis rate limiter for Redis Cluster environment.
+//  hashTag: redis hash tag value, helps to ensure all keys be in the same slot.
+// see: https://redis.io/topics/cluster-tutorial#redis-cluster-data-sharding
+func NewRedisTtlRateLimiterCluster(redisClient *redis.Client, params TtlRateLimiterParams, hashTag string) TtlRateLimiter {
+	r := &redisTtlRateLimiter{
+		params:      params,
+		redisClient: redisClient,
+		hashTag:     "{" + strings.Trim(hashTag, "{}") + "}",
+	}
+	return r
+}
+
 type redisTtlRateLimiter struct {
 	params      TtlRateLimiterParams
 	redisClient *redis.Client
+	hashTag     string
 }
 
 func (r *redisTtlRateLimiter) ShouldBlock(key string, msg string) *Result {
@@ -145,7 +159,6 @@ func (r *redisTtlRateLimiter) ShouldBlock(key string, msg string) *Result {
 }
 
 func (r *redisTtlRateLimiter) ShouldBlock2(key string, blockKey string, msg string) *Result {
-
 	result := &Result{}
 
 	if isParamsNotSet(r.params) {
@@ -154,6 +167,11 @@ func (r *redisTtlRateLimiter) ShouldBlock2(key string, blockKey string, msg stri
 
 	key = prefix + key
 	blockKey = blockKey + suffix
+
+	if r.hashTag != "" {
+		key = key + r.hashTag
+		blockKey = blockKey + r.hashTag
+	}
 
 	//local key = KEYS[1]
 	//local keyb = KEYS[2]
