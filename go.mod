@@ -3,6 +3,7 @@ module github.com/chanjarster/gears
 go 1.14
 
 require (
+	github.com/SkyAPM/go2sky v1.4.0 // indirect
 	github.com/elastic/go-elasticsearch/v7 v7.10.0
 	github.com/gin-contrib/pprof v1.3.0
 	github.com/gin-gonic/gin v1.7.4
@@ -18,7 +19,6 @@ require (
 	github.com/ugorji/go v1.2.6 // indirect
 	github.com/valyala/fasthttp v1.12.0
 	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5 // indirect
-	golang.org/x/sys v0.0.0-20210823070655-63515b42dcdf // indirect
 	golang.org/x/text v0.3.7 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
