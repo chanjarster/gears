@@ -25,6 +25,9 @@ import (
 	"net/url"
 	"strings"
 	"time"
+	sqlPlugin "github.com/SkyAPM/go2sky-plugins/sql"
+
+	"github.com/SkyAPM/go2sky"
 )
 
 // Config keys:
@@ -112,6 +115,34 @@ func NewMySqlDb(conf *MysqlConf, customizer MysqlConfigCustomizer) *sql.DB {
 
 	simplelog.StdLogger.Printf("Connected to MySQL: %s:%d", conf.Host, conf.Port)
 	return db
+}
+
+func NewMySqlDbWithTracer(conf *MysqlConf, tracer *go2sky.Tracer, customizer MysqlConfigCustomizer) *sql.DB {
+
+	mc := prepareMySqlNativeConfig(conf, customizer)
+
+	dsn := mc.FormatDSN()
+	db, err := sqlPlugin.Open("mysql", dsn, tracer,
+		sqlPlugin.WithSQLDBType(sqlPlugin.MYSQL),
+		sqlPlugin.WithQueryReport(),
+		sqlPlugin.WithParamReport(),
+		)
+	if err != nil {
+		simplelog.ErrLogger.Fatal(err)
+		panic(err)
+	}
+	db.SetMaxOpenConns(conf.MaxOpenConns)
+	db.SetMaxIdleConns(conf.MaxIdleConns)
+	db.SetConnMaxLifetime(conf.ConnMaxLifetime)
+
+	err = db.Ping()
+	if err != nil {
+		simplelog.ErrLogger.Fatal("MySQL connection error: ", err)
+		panic(err)
+	}
+
+	simplelog.StdLogger.Printf("Connected to MySQL: %s:%d", conf.Host, conf.Port)
+	return db.DB
 }
 
 func prepareMySqlNativeConfig(conf *MysqlConf, customizer MysqlConfigCustomizer) *mysql.Config {
