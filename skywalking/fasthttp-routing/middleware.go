@@ -31,11 +31,35 @@ var (
 	}
 )
 
-func NewMiddleware(tracer *go2sky.Tracer) routing.Handler {
+type options struct {
+	logError   bool
+	log4xxBody bool
+}
+
+type Option func(opts *options)
+
+func WithLogError() Option {
+	return func(opts *options) {
+		opts.logError = true
+	}
+}
+
+func WithLog4xxBody() Option {
+	return func(opts *options) {
+		opts.log4xxBody = true
+	}
+}
+
+func NewMiddleware(tracer *go2sky.Tracer, opts ...Option) routing.Handler {
 	if tracer == nil {
 		return func(c *routing.Context) error {
 			return c.Next()
 		}
+	}
+
+	options := &options{}
+	for _, o := range opts {
+		o(options)
 	}
 
 	return func(rCtx *routing.Context) error {
@@ -57,11 +81,23 @@ func NewMiddleware(tracer *go2sky.Tracer) routing.Handler {
 
 		err = rCtx.Next()
 		if err != nil {
-			span.Error(time.Now(), err.Error())
+			if options.logError {
+				span.Error(time.Now(), err.Error())
+			} else {
+				span.Error(time.Now())
+			}
 		} else if err = rCtx.Err(); err != nil {
-			span.Error(time.Now(), err.Error())
+			if options.logError {
+				span.Error(time.Now(), err.Error())
+			} else {
+				span.Error(time.Now())
+			}
 		} else if rCtx.Response.StatusCode() >= 400 {
-			span.Error(time.Now(), string(rCtx.Response.Body()))
+			if options.log4xxBody {
+				span.Error(time.Now(), string(rCtx.Response.Body()))
+			} else {
+				span.Error(time.Now())
+			}
 		}
 		span.Tag(go2sky.TagStatusCode, strconv.Itoa(rCtx.Response.StatusCode()))
 		span.End()

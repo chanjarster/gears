@@ -92,9 +92,10 @@ func (h *tracerHook) AfterProcess(ctx context.Context, cmd rv7.Cmder) error {
 	cmdErr := cmd.Err()
 	if cmdErr != nil {
 		now := time.Now()
-		span.Error(now, cmdErr.Error())
 		if h.opts.logError {
-			span.Log(now, cmdErr.Error())
+			span.Error(now, cmdErr.Error())
+		} else {
+			span.Error(now)
 		}
 	}
 	span.End()
@@ -147,9 +148,10 @@ func (h *tracerHook) AfterProcessPipeline(ctx context.Context, cmds []rv7.Cmder)
 	errs := quickJoinError(cmds, "|")
 	if errs != "" {
 		now := time.Now()
-		span.Error(now, errs)
 		if h.opts.logError {
-			span.Log(now, errs)
+			span.Error(now, errs)
+		} else {
+			span.Error(now)
 		}
 	}
 

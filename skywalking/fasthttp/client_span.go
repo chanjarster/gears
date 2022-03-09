@@ -15,12 +15,37 @@ const (
 )
 
 type ClientSpanHelper struct {
-	tracer *go2sky.Tracer
+	tracer  *go2sky.Tracer
+	options *options
 }
 
-func NewClientSpanHelper(trace *go2sky.Tracer) *ClientSpanHelper {
+type options struct {
+	logError   bool
+	log4xxBody bool
+}
+
+type Option func(opts *options)
+
+func WithLogError() Option {
+	return func(opts *options) {
+		opts.logError = true
+	}
+}
+
+func WithLog4xxBody() Option {
+	return func(opts *options) {
+		opts.log4xxBody = true
+	}
+}
+
+func NewClientSpanHelper(trace *go2sky.Tracer, opts ...Option) *ClientSpanHelper {
+	options := &options{}
+	for _, o := range opts {
+		o(options)
+	}
 	return &ClientSpanHelper{
-		tracer: trace,
+		tracer:  trace,
+		options: options,
 	}
 }
 
@@ -48,7 +73,11 @@ func (fc *ClientSpanHelper) EndSpan(span go2sky.Span, res *fasthttp.Response) {
 		return
 	}
 	if res.StatusCode() >= 400 {
-		span.Error(time.Now(), string(res.Body()))
+		if fc.options.log4xxBody {
+			span.Error(time.Now(), string(res.Body()))
+		} else {
+			span.Error(time.Now())
+		}
 	}
 	span.Tag(go2sky.TagStatusCode, strconv.Itoa(res.StatusCode()))
 	span.End()
@@ -59,7 +88,11 @@ func (fc *ClientSpanHelper) EndSpanError(span go2sky.Span, err error) {
 		return
 	}
 	now := time.Now()
-	span.Error(now, err.Error())
+	if fc.options.logError {
+		span.Error(now, err.Error())
+	} else {
+		span.Error(now)
+	}
 	span.End()
 }
 
