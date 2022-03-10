@@ -18,6 +18,7 @@
 package ratelimiter
 
 import (
+	"context"
 	"github.com/chanjarster/gears/simplelog"
 	"github.com/go-redis/redis/v7"
 	"strings"
@@ -154,11 +155,35 @@ type redisTtlRateLimiter struct {
 	hashTag     string
 }
 
-func (r *redisTtlRateLimiter) ShouldBlock(key string, msg string) *Result {
-	return r.ShouldBlock2(key, key, msg)
+func (r *redisTtlRateLimiter) ShouldBlockContext(ctx context.Context, key string, msg string) *Result {
+	return r.ShouldBlock2Context(ctx, key, key, msg)
 }
 
-func (r *redisTtlRateLimiter) ShouldBlock2(key string, blockKey string, msg string) *Result {
+func (r *redisTtlRateLimiter) IsBlockedContext(ctx context.Context, blockKey string) *Result {
+	result := &Result{}
+	blockKey = blockKey + suffix
+
+	//local keyb = KEYS[1]
+	raw, err := r.redisClient.WithContext(ctx).EvalSha(
+		scriptSha2,
+		[]string{blockKey},
+	).Result()
+
+	if err != nil {
+		simplelog.ErrLogger.Println("eval script2 ", scriptSha2, "error", err)
+		return result
+	}
+
+	arr := raw.([]interface{})
+	result.Block = arr[0].(int64) == 1
+	result.Triggered = arr[1].(int64) == 1
+	result.Ttl = int(arr[2].(int64))
+	result.Msg = arr[3].(string)
+	return result
+
+}
+
+func (r *redisTtlRateLimiter) ShouldBlock2Context(ctx context.Context, key string, blockKey string, msg string) *Result {
 	result := &Result{}
 
 	if isParamsNotSet(r.params) {
@@ -183,7 +208,7 @@ func (r *redisTtlRateLimiter) ShouldBlock2(key string, blockKey string, msg stri
 
 	now := time.Now().UnixNano() / int64(time.Second)
 
-	raw, err := r.redisClient.EvalSha(
+	raw, err := r.redisClient.WithContext(ctx).EvalSha(
 		scriptSha1,
 		[]string{key, blockKey},
 		r.params.GetCapacity(),
@@ -207,27 +232,16 @@ func (r *redisTtlRateLimiter) ShouldBlock2(key string, blockKey string, msg stri
 
 }
 
+func (r *redisTtlRateLimiter) ShouldBlock(key string, msg string) *Result {
+	return r.ShouldBlock2(key, key, msg)
+}
+
+func (r *redisTtlRateLimiter) ShouldBlock2(key string, blockKey string, msg string) *Result {
+	return r.ShouldBlock2Context(context.Background(), key, blockKey, msg)
+}
+
 func (r *redisTtlRateLimiter) IsBlocked(blockKey string) *Result {
-	result := &Result{}
-	blockKey = blockKey + suffix
-
-	//local keyb = KEYS[1]
-	raw, err := r.redisClient.EvalSha(
-		scriptSha2,
-		[]string{blockKey},
-	).Result()
-
-	if err != nil {
-		simplelog.ErrLogger.Println("eval script2 ", scriptSha2, "error", err)
-		return result
-	}
-
-	arr := raw.([]interface{})
-	result.Block = arr[0].(int64) == 1
-	result.Triggered = arr[1].(int64) == 1
-	result.Ttl = int(arr[2].(int64))
-	result.Msg = arr[3].(string)
-	return result
+	return r.IsBlockedContext(context.Background(), blockKey)
 }
 
 func (r *redisTtlRateLimiter) GetWindowSizeSeconds() int {

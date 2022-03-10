@@ -17,6 +17,8 @@
 
 package ratelimiter
 
+import "context"
+
 // Legal results are:
 //
 // 1. block:false, triggered:false, ttl:0, msg:""
@@ -34,6 +36,8 @@ type Result struct {
 // A rate limiter that will prevent further request for ttl seconds after first time request rate exceeds the limit.
 type TtlRateLimiter interface {
 
+	TtlRateLimiterParams
+
 	// same as ShouldBlock2(key, key, msg)
 	ShouldBlock(key string, msg string) *Result
 
@@ -49,6 +53,17 @@ type TtlRateLimiter interface {
 	// Note: different `key` can share same `blockKey`, same `key` MUST NOT share different `blockKey`
 	ShouldBlock2(key string, blockKey string, msg string) *Result
 
+	ShouldBlockContext(ctx context.Context, key string, msg string) *Result
+
+	IsBlockedContext(ctx context.Context, blockKey string) *Result
+
+	ShouldBlock2Context(ctx context.Context, key string, blockKey string, msg string) *Result
+
+
+}
+
+// Interface for the need of runtime rate limit parameters
+type TtlRateLimiterParams interface {
 	// capacity: window capacity
 	// time range the window look back
 	GetWindowSizeSeconds() int
@@ -56,13 +71,6 @@ type TtlRateLimiter interface {
 	GetCapacity() int
 	// how many seconds blocking will last after first time blocking happened
 	GetTimeoutSeconds() int
-}
-
-// Interface for the need of runtime rate limit parameters
-type TtlRateLimiterParams interface {
-	GetWindowSizeSeconds() int
-	GetTimeoutSeconds() int
-	GetCapacity() int
 }
 
 func isParamsNotSet(params TtlRateLimiterParams) bool {
