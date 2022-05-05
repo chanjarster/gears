@@ -14,13 +14,14 @@ require (
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/golang/gddo v0.0.0-20210115222349-20d68f94ee1f // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
+	github.com/klauspost/compress v1.15.2 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2
 	github.com/qiangxue/fasthttp-routing v0.0.0-20160225050629-6ccdc2a18d87
 	github.com/sijms/go-ora/v2 v2.4.18
 	github.com/ugorji/go v1.2.7 // indirect
-	github.com/valyala/fasthttp v1.12.0
+	github.com/valyala/fasthttp v1.36.0
 	golang.org/x/crypto v0.0.0-20220307211146-efcb8507fb70 // indirect
 	golang.org/x/sys v0.0.0-20220307203707-22a9840ba4d7 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
