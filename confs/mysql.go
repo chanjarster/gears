@@ -20,12 +20,12 @@ package confs
 import (
 	"database/sql"
 	"fmt"
+	sqlPlugin "github.com/SkyAPM/go2sky-plugins/sql"
 	"github.com/chanjarster/gears/simplelog"
 	"github.com/go-sql-driver/mysql"
 	"net/url"
 	"strings"
 	"time"
-	sqlPlugin "github.com/SkyAPM/go2sky-plugins/sql"
 
 	"github.com/SkyAPM/go2sky"
 )
@@ -62,8 +62,6 @@ import (
 // Note: if MysqlConf is nested in another struct, add corresponding prefix.
 //
 // more details: https://github.com/go-sql-driver/mysql
-//
-// more details:
 type MysqlConf struct {
 	Host     string // MySQL host
 	Port     int    // MySQL port
@@ -126,7 +124,7 @@ func NewMySqlDbWithTracer(conf *MysqlConf, tracer *go2sky.Tracer, customizer Mys
 		sqlPlugin.WithSQLDBType(sqlPlugin.MYSQL),
 		sqlPlugin.WithQueryReport(),
 		sqlPlugin.WithParamReport(),
-		)
+	)
 	if err != nil {
 		simplelog.ErrLogger.Fatal(err)
 		panic(err)
