@@ -18,7 +18,9 @@
 package event
 
 import (
+	"github.com/stretchr/testify/assert"
 	"testing"
+	"time"
 )
 
 func TestFanOutBus_Close(t *testing.T) {
@@ -147,9 +149,9 @@ func TestFanOutBus_GoDispatch(t *testing.T) {
 	t.Run("buffered bus & receiver", func(t *testing.T) {
 
 		bus := NewFanOutBus(1)
-
-		foo := bus.NewRecv("foo", 1)
 		bus.GoDispatch()
+		foo := bus.NewRecv("foo", 1)
+
 		// bar is registered after GoDispatch, it's ok
 		bar := bus.NewRecv("bar", 1)
 
@@ -340,5 +342,51 @@ func assertChannelClosed(t *testing.T, name string, ch <-chan interface{}, expec
 		default:
 		}
 	}
+
+}
+
+func TestReceiver_Drain(t *testing.T) {
+
+	t.Run("normal", func(t *testing.T) {
+
+		bus := NewFanOutBus(10)
+
+		foo := bus.NewRecv("foo", 10)
+		bus.GoDispatch()
+
+		bus.C <- "hello"
+		bus.C <- "world"
+
+		// wait for dispatch goroutine do its job
+		<-time.NewTimer(time.Second / 10).C
+		data := foo.Drain()
+		assert.ElementsMatch(t, []string{"hello", "world"}, data)
+	})
+
+}
+
+func TestReceiver_CollectTimeout(t *testing.T) {
+
+	t.Run("normal", func(t *testing.T) {
+
+		bus := NewFanOutBus(10)
+
+		foo := bus.NewRecv("foo", 10)
+		bus.GoDispatch()
+
+		bus.C <- "hello"
+		bus.C <- "world"
+
+		go func() {
+			// an event after 500ms
+			<-time.NewTimer(time.Second / 2).C
+			bus.ch <- "kitty"
+		}()
+
+		// no need to wait dispatch finished explicitly
+		// and will ignore future event
+		data := foo.CollectTimeout(time.Second / 10)
+		assert.ElementsMatch(t, []string{"hello", "world"}, data)
+	})
 
 }

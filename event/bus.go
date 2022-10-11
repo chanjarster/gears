@@ -20,6 +20,7 @@ package event
 import (
 	"log"
 	"sync"
+	"time"
 )
 
 // A fan-out event bus. Sending a event to it, it will dispatch events to all Receivers.
@@ -128,6 +129,37 @@ type Receiver struct {
 // Close Receiver.C, deregistered itself from event bus
 func (r *Receiver) Close() {
 	r.bus.deregisterRecv(r.name)
+}
+
+// Drain drains Receiver.C until it's empty
+func (r *Receiver) Drain() (data []interface{}) {
+	data = make([]interface{}, 0, 10)
+drained:
+	for {
+		select {
+		case d := <-r.C:
+			data = append(data, d)
+		default:
+			break drained
+		}
+	}
+	return data
+}
+
+// CollectTimeout collects elements of Receiver.C until timeout
+func (r *Receiver) CollectTimeout(timeout time.Duration) (data []interface{}) {
+	timer := time.NewTimer(timeout)
+	data = make([]interface{}, 0, 10)
+drained:
+	for {
+		select {
+		case d := <-r.C:
+			data = append(data, d)
+		case <-timer.C:
+			break drained
+		}
+	}
+	return
 }
 
 func (r *Receiver) onEvent(v interface{}) {

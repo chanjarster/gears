@@ -20,6 +20,7 @@ require (
 	github.com/modern-go/reflect2 v1.0.2
 	github.com/qiangxue/fasthttp-routing v0.0.0-20160225050629-6ccdc2a18d87
 	github.com/sijms/go-ora/v2 v2.4.18
+	github.com/stretchr/testify v1.7.0
 	github.com/ugorji/go v1.2.7 // indirect
 	github.com/valyala/fasthttp v1.36.0
 	golang.org/x/crypto v0.0.0-20220307211146-efcb8507fb70 // indirect
