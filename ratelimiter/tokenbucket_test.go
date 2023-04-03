@@ -20,6 +20,7 @@ package ratelimiter
 import (
 	gtime "github.com/chanjarster/gears/util/time"
 	"reflect"
+	"strconv"
 	"testing"
 	"time"
 )
@@ -46,10 +47,15 @@ func TestNewSyncTokenBucket(t *testing.T) {
 }
 
 func TestSyncTokenBucket_Acquire(t *testing.T) {
-	testTokenBucket_Acquire(t, func() (bucket TokenBucket, i int) {
-		cap := 10
-		return NewSyncTokenBucket(10, 10), cap
-	})
+	capacity := 10
+	rate := 10
+	testTokenBucket_Acquire(t, capacity, rate, NewSyncTokenBucket)
+}
+
+func TestSyncTokenBucket_Acquire_bust(t *testing.T) {
+	capacity := 10
+	rate := 1
+	testTokenBucket_Acquire_bust(t, capacity, rate, NewSyncTokenBucket)
 }
 
 func TestNewAtomicTokenBucket(t *testing.T) {
@@ -74,27 +80,67 @@ func TestNewAtomicTokenBucket(t *testing.T) {
 }
 
 func TestAtomicTokenBucket_Acquire(t *testing.T) {
-
-	testTokenBucket_Acquire(t, func() (bucket TokenBucket, i int) {
-		cap := 10
-		return NewAtomicTokenBucket(10, 10), cap
-	})
+	capacity := 10
+	rate := 10
+	testTokenBucket_Acquire(t, capacity, rate, NewAtomicTokenBucket)
 }
 
-func testTokenBucket_Acquire(t *testing.T, new func() (TokenBucket, int)) {
+func TestAtomicTokenBucket_Acquire_bust(t *testing.T) {
+	capacity := 10
+	rate := 1
+	testTokenBucket_Acquire_bust(t, capacity, rate, NewAtomicTokenBucket)
+}
 
-	t.Run("acquire 10 times", func(t *testing.T) {
-		bucket, cap := new()
-		for i := 0; i < cap; i++ {
+type tokenBucketCreator func(int, int) TokenBucket
+
+// 测试爆发请求之后，令牌桶是否能够在间隔 1 秒之后生成新 token
+func testTokenBucket_Acquire_bust(t *testing.T, capacity, rate int, new tokenBucketCreator) {
+
+	bucket := new(capacity, rate)
+	// drain bucket
+	for i := 0; i < capacity; i++ {
+		if got := bucket.Acquire(); !got {
+			t.Errorf("acquire() = %v, want %v", got, true)
+		}
+	}
+
+	var fail = 0
+	start := time.Now().UnixMilli()
+	for {
+		success := bucket.Acquire()
+		if success {
+			if fail == 0 {
+				t.Error("acquire() not failed at least one time")
+			}
+			break
+		} else {
+			fail++
+		}
+		if fail%100000 == 0 {
+			now := time.Now().UnixMilli()
+			if now-start > 2000 {
+				t.Error("acquire() not success in 2 seconds")
+				break
+			}
+		}
+	}
+
+}
+
+func testTokenBucket_Acquire(t *testing.T, capacity, rate int, new tokenBucketCreator) {
+
+	t.Run("acquire "+strconv.Itoa(capacity)+" times", func(t *testing.T) {
+		bucket := new(capacity, rate)
+		for i := 0; i < capacity; i++ {
 			if got := bucket.Acquire(); !got {
 				t.Errorf("acquire() = %v, want %v", got, true)
 			}
 		}
 	})
 
-	t.Run("acquire 11 times", func(t *testing.T) {
-		bucket, cap := new()
-		for i := 0; i < cap; i++ {
+	t.Run("acquire "+strconv.Itoa(capacity+1)+" times", func(t *testing.T) {
+		bucket := new(capacity, rate)
+		for i := 0; i < capacity; i++ {
 			if got := bucket.Acquire(); !got {
 				t.Errorf("acquire() = %v, want %v", got, true)
 			}
@@ -104,9 +150,9 @@ func testTokenBucket_Acquire(t *testing.T, new func() (TokenBucket, int)) {
 		}
 	})
 
-	t.Run("acquire 10  times, wait 1 sec", func(t *testing.T) {
-		bucket, cap := new()
-		for i := 0; i < cap; i++ {
+	t.Run("acquire "+strconv.Itoa(capacity)+" times, wait 1 sec", func(t *testing.T) {
+		bucket := new(capacity, rate)
+		for i := 0; i < capacity; i++ {
 			if got := bucket.Acquire(); !got {
 				t.Errorf("acquire() = %v, want %v", got, true)
 			}
@@ -125,7 +171,7 @@ func testTokenBucket_Acquire(t *testing.T, new func() (TokenBucket, int)) {
 
 	t.Run("acquire for 2 seconds", func(t *testing.T) {
 		// 连续不停的拿Token，肯定会经历从 可拿->不可拿->可拿->不可拿 的过程
-		bucket, _ := new()
+		bucket := new(capacity, rate)
 
 		prev := false
 		history := make([]bool, 0, 4)

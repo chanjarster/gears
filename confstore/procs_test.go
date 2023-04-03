@@ -3,6 +3,7 @@ package confstore
 import (
 	"crypto/rsa"
 	rsautil "github.com/chanjarster/gears/util/rsa"
+	"github.com/stretchr/testify/assert"
 	"net/url"
 	"reflect"
 	"testing"
@@ -677,31 +678,37 @@ func Test_enumProcessor_Validate(t *testing.T) {
 		fields  fields
 		args    args
 		wantOk  bool
-		wantErr string
+		wantErr []string
 	}{
 		{
-			fields:  fields{[]string{"foo", "bar"}},
-			args:    args{""},
-			wantOk:  false,
-			wantErr: "only allowed value: [foo,bar]",
+			fields: fields{[]string{"foo", "bar"}},
+			args:   args{""},
+			wantOk: false,
+			wantErr: []string{
+				"only allowed value: [foo,bar]",
+				"only allowed value: [bar,foo]",
+			},
 		},
 		{
-			fields:  fields{[]string{"foo", "bar"}},
-			args:    args{"loo"},
-			wantOk:  false,
-			wantErr: "only allowed value: [foo,bar]",
+			fields: fields{[]string{"foo", "bar"}},
+			args:   args{"loo"},
+			wantOk: false,
+			wantErr: []string{
+				"only allowed value: [foo,bar]",
+				"only allowed value: [bar,foo]",
+			},
 		},
 		{
 			fields:  fields{[]string{"foo", "bar"}},
 			args:    args{"foo"},
 			wantOk:  true,
-			wantErr: "",
+			wantErr: []string{""},
 		},
 		{
 			fields:  fields{[]string{"foo", "bar"}},
 			args:    args{"bar"},
 			wantOk:  true,
-			wantErr: "",
+			wantErr: []string{""},
 		},
 	}
 	for _, tt := range tests {
@@ -711,9 +718,7 @@ func Test_enumProcessor_Validate(t *testing.T) {
 			if gotOk != tt.wantOk {
 				t.Errorf("Validate() gotOk = %v, want %v", gotOk, tt.wantOk)
 			}
-			if gotErr != tt.wantErr {
-				t.Errorf("Validate() gotErr = %v, want %v", gotErr, tt.wantErr)
-			}
+			assert.Contains(t, tt.wantErr, gotErr, "Validate() got unexpected error")
 		})
 	}
 }
