@@ -363,6 +363,22 @@ func TestReceiver_Drain(t *testing.T) {
 		assert.ElementsMatch(t, []string{"hello", "world"}, data)
 	})
 
+	t.Run("drain a closed receiver", func(t *testing.T) {
+
+		bus := NewFanOutBus(10)
+
+		foo := bus.NewRecv("foo", 10)
+		bus.GoDispatch()
+
+		bus.C <- "hello"
+		bus.C <- "world"
+
+		// wait for dispatch goroutine do its job
+		<-time.NewTimer(time.Second / 10).C
+		foo.Close()
+		data := foo.Drain()
+		assert.ElementsMatch(t, []string{"hello", "world"}, data)
+	})
 }
 
 func TestReceiver_CollectTimeout(t *testing.T) {

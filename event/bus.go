@@ -31,8 +31,9 @@ type FanOutBus struct {
 	recvMap     map[string]*Receiver
 }
 
-// make a new FanOutBus
-//  bufSize: capacity of FanOutBus.C, if 0 then it's unbuffered
+// NewFanOutBus make a new FanOutBus
+//
+//	bufSize: capacity of FanOutBus.C, if 0 then it's unbuffered
 func NewFanOutBus(bufSize int) *FanOutBus {
 	ch := make(chan interface{}, bufSize)
 	return &FanOutBus{
@@ -48,12 +49,14 @@ func (b *FanOutBus) NewRecv(name string, bufSize int) *Receiver {
 	return b.NewRecvStrategy(name, bufSize, Drop)
 }
 
-// Make a new *Receiver and registered to event bus. You can make a Receiver at any time
+// NewRecvStrategy make a new *Receiver and registered to event bus. You can make a Receiver at any time
 // except event bus is closed. Any events sent to event bus before Receiver making maybe
 // or maybe not be sent to them.
-//  name: receiver's name
-//  bufSize: capacity of Receiver.C, if 0 then it's unbuffered
-//  fullStrategy: if Receiver.C is full, Drop the event or Block the goroutine.
+//
+//	name: receiver's name
+//	bufSize: capacity of Receiver.C, if 0 then it's unbuffered
+//	fullStrategy: if Receiver.C is full, Drop the event or Block the goroutine.
+//
 // Be careful if choose Block, the whole event bus will be blocked if any Receiver can't catch-up.
 // i.e, if Receiver A blocks, other receivers cannot receive event until Receiver A proceeds.
 func (b *FanOutBus) NewRecvStrategy(name string, bufSize int, fullStrategy FullStrategy) *Receiver {
@@ -137,7 +140,10 @@ func (r *Receiver) Drain() (data []interface{}) {
 drained:
 	for {
 		select {
-		case d := <-r.C:
+		case d, ok := <-r.C:
+			if !ok {
+				break drained
+			}
 			data = append(data, d)
 		default:
 			break drained
