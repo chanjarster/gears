@@ -19,7 +19,7 @@ package ratelimiter
 
 import "context"
 
-// Legal results are:
+// Result Legal results are:
 //
 // 1. block:false, triggered:false, ttl:0, msg:""
 //
@@ -33,18 +33,17 @@ type Result struct {
 	Msg       string // message recorded when first time blocking
 }
 
-// A rate limiter that will prevent further request for ttl seconds after first time request rate exceeds the limit.
+// TtlRateLimiter A rate limiter that will prevent further request for ttl seconds after first time request rate exceeds the limit.
 type TtlRateLimiter interface {
-
 	TtlRateLimiterParams
 
-	// same as ShouldBlock2(key, key, msg)
+	// ShouldBlock same as ShouldBlock2(key, key, msg)
 	ShouldBlock(key string, msg string) *Result
 
-	// Check `blockKey` exists
+	// IsBlocked Check `blockKey` exists
 	IsBlocked(blockKey string) *Result
 
-	// When the request rate of `key` exceeds the limit, blocking will be triggered(record on `blockKey`)
+	// ShouldBlock2 When the request rate of `key` exceeds the limit, blocking will be triggered(record on `blockKey`)
 	// and last for `timeout` seconds(ttl).
 	// After `timeout` seconds, `blockKey` will be released and request `key` can be passed again.
 	//
@@ -58,8 +57,6 @@ type TtlRateLimiter interface {
 	IsBlockedContext(ctx context.Context, blockKey string) *Result
 
 	ShouldBlock2Context(ctx context.Context, key string, blockKey string, msg string) *Result
-
-
 }
 
 // Interface for the need of runtime rate limit parameters

@@ -17,9 +17,22 @@
 
 package ratelimiter
 
+import "time"
+
 type Interface interface {
 	// Acquire a permission, return false if be rejected.
 	Acquire() (acquired bool)
-	// Get the rate limiter's capacity
+
+	// Capacity Get the rate limiter's capacity
 	Capacity() int
+}
+
+type Configurable interface {
+	SetCapacity(newCap int)
+}
+
+// ConfigurableWindow 可配置的窗口
+type ConfigurableWindow interface {
+	// UpdateConfig 更新容量和窗口尺寸
+	UpdateConfig(capacity int, windowSize time.Duration)
 }

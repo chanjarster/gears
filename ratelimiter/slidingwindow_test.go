@@ -48,9 +48,12 @@ func TestNewSyncSlidingWindow(t *testing.T) {
 
 func TestSyncSlidingWindow_Acquire(t *testing.T) {
 
+	var (
+		cap        = 10
+		windowSize = 50 * time.Millisecond
+	)
+
 	new := func() *SyncSlidingWindow {
-		cap := 10
-		windowSize := 50 * time.Millisecond
 		return NewSyncSlidingWindow(cap, windowSize)
 	}
 
@@ -120,4 +123,69 @@ func TestSyncSlidingWindow_Acquire(t *testing.T) {
 		}
 	})
 
+	// 先获取11次, 第11次肯定失败, 扩展容量, 第12次肯定通过
+	t.Run("acquire 11 times,extend cap,acquire once", func(t *testing.T) {
+		ratelimiter := new()
+		for i := 0; i < ratelimiter.Capacity(); i++ {
+			if got := ratelimiter.Acquire(); !got {
+				t.Errorf("acquire() = %v, want %v", got, true)
+			}
+		}
+		if got := ratelimiter.Acquire(); got {
+			t.Errorf("acquire() = %v, want %v", got, false)
+		}
+		ratelimiter.UpdateConfig(cap+1, windowSize)
+		if got := ratelimiter.Acquire(); !got {
+			t.Errorf("acquire() = %v, want %v", got, true)
+		}
+	})
+
+	// 先获取9次, 扩展缩小容量, 第10次肯定失败
+	t.Run("acquire 9 times,shrink cap,acquire once", func(t *testing.T) {
+		ratelimiter := new()
+		for i := 0; i < ratelimiter.Capacity()-1; i++ {
+			if got := ratelimiter.Acquire(); !got {
+				t.Errorf("acquire() = %v, want %v", got, true)
+			}
+		}
+		ratelimiter.UpdateConfig(cap-1, windowSize)
+		if got := ratelimiter.Acquire(); got {
+			t.Errorf("acquire() = %v, want %v", got, false)
+		}
+	})
+
+	// 先获取11次, 第11次肯定失败, 缩小窗口大小, 第12次肯定通过
+	t.Run("acquire 11 times,shrink window,acquire once", func(t *testing.T) {
+		ratelimiter := new()
+		for i := 0; i < ratelimiter.Capacity(); i++ {
+			if got := ratelimiter.Acquire(); !got {
+				t.Errorf("acquire() = %v, want %v", got, true)
+			}
+		}
+		if got := ratelimiter.Acquire(); got {
+			t.Errorf("acquire() = %v, want %v", got, false)
+		}
+		// 窗口缩小为40ms, 所以只需要等50ms, 就可以有新的请求通过
+		ratelimiter.UpdateConfig(cap, windowSize-10*time.Millisecond)
+		ratelimiter.nowFn = gtime.FixedNow(time.Now().Add(50 * time.Millisecond))
+		if got := ratelimiter.Acquire(); !got {
+			t.Errorf("acquire() = %v, want %v", got, true)
+		}
+	})
+
+	// 先获取10次, 扩展窗口大小, 第11次肯定失败
+	t.Run("acquire 10 times,extend window,acquire once", func(t *testing.T) {
+		ratelimiter := new()
+		for i := 0; i < ratelimiter.Capacity(); i++ {
+			if got := ratelimiter.Acquire(); !got {
+				t.Errorf("acquire() = %v, want %v", got, true)
+			}
+		}
+		// 窗口扩展为60ms, 所以就算等待50ms, 新的请求也是不通过的
+		ratelimiter.UpdateConfig(cap, windowSize+10*time.Millisecond)
+		ratelimiter.nowFn = gtime.FixedNow(time.Now().Add(50 * time.Millisecond))
+		if got := ratelimiter.Acquire(); got {
+			t.Errorf("acquire() = %v, want %v", got, false)
+		}
+	})
 }

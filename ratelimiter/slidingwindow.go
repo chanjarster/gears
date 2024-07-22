@@ -24,20 +24,25 @@ import (
 	"time"
 )
 
-// 滑动时间窗口限流器
+// SlidingWindow 滑动时间窗口限流器
 //
 // 在当前时间往前的 windowSize 范围内，如果请求次数超过 capacity 那么就拒绝请求
 //
 // 举个具体的例子，当前时间的往前 1分钟 内，如果请求次数超过了 100次 那么就拒绝请求，这样就限定了请求速率恒定在 100次/分钟
 type SlidingWindow interface {
 	Interface
+	ConfigurableWindow
 	WindowSize() time.Duration // time range the window look back
 }
 
-// New a SyncFixedWindow.
-//  capacity: window capacity
-//  windowSize: time range the window look back
+// NewSyncSlidingWindow New a SyncFixedWindow.
+//
+//	capacity: window capacity
+//	windowSize: time range the window look back
 func NewSyncSlidingWindow(capacity int, windowSize time.Duration) *SyncSlidingWindow {
+	if capacity < 0 {
+		capacity = 0
+	}
 	return &SyncSlidingWindow{
 		capacity:   capacity,
 		windowSize: int64(windowSize),
@@ -47,7 +52,7 @@ func NewSyncSlidingWindow(capacity int, windowSize time.Duration) *SyncSlidingWi
 }
 
 type SyncSlidingWindow struct {
-	lock       sync.Mutex
+	lock       sync.RWMutex
 	capacity   int
 	windowSize int64
 	records    *list.List // 请求记录，其实就是时间戳
@@ -59,6 +64,10 @@ func (s *SyncSlidingWindow) Acquire() bool {
 
 	s.lock.Lock()
 	defer s.lock.Unlock()
+
+	if s.capacity == 0 {
+		return true
+	}
 
 	if s.records.Len() < s.capacity {
 		// 未到容量，可以通过
@@ -78,9 +87,31 @@ func (s *SyncSlidingWindow) Acquire() bool {
 }
 
 func (s *SyncSlidingWindow) Capacity() int {
+	s.lock.RLock()
+	defer s.lock.RUnlock()
 	return s.capacity
 }
 
 func (s *SyncSlidingWindow) WindowSize() time.Duration {
+	s.lock.RLock()
+	defer s.lock.RUnlock()
 	return time.Duration(s.windowSize)
+}
+
+func (s *SyncSlidingWindow) UpdateConfig(capacity int, windowSize time.Duration) {
+	s.lock.Lock()
+	defer s.lock.Unlock()
+
+	if capacity < 0 {
+		capacity = 0
+	}
+
+	for s.records.Len() > 0 && s.records.Len() > capacity {
+		// 针对缩容的情况
+		s.records.Remove(s.records.Front())
+	}
+
+	s.capacity = capacity
+	s.windowSize = int64(windowSize)
+
 }
